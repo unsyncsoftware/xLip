@@ -1,0 +1,24 @@
+name: Deploy to wyse-server
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+
+    steps:
+      - name: Pull latest code
+        run: |
+          cd /home/xlip/htdocs/xlip.uk
+          git pull origin main
+
+      - name: Install dependencies
+        run: |
+          cd /home/xlip/htdocs/xlip.uk
+          npm install --production
+
+      - name: Reload PM2
+        run: |
+          pm2 reload xlip --update-env
