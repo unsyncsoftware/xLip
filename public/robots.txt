@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /race-control-hidden/
+Disallow: /api/
+Disallow: /xlip-admin/
+
+Sitemap: https://xlip.uk/sitemap.xml

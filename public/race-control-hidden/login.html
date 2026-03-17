@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>XLIP | Race Control Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #050505; color: white; font-family: 'Inter', sans-serif; }
+        .f1-red { color: #e10600; }
+        .input-box { background: #111; border: 1px solid #222; padding: 10px; width: 100%; margin-top: 10px; color: white; }
+    </style>
+</head>
+<body class="flex items-center justify-center h-screen">
+    <div class="max-w-md w-full p-8 border-l-4 border-red-600 bg-zinc-900 shadow-2xl">
+        <h1 class="text-3xl font-black uppercase italic italic mb-6"><span class="f1-red">XLIP</span> LOGIN</h1>
+        <input type="email" id="email" placeholder="Admin Email" class="input-box">
+        <input type="password" id="password" placeholder="Key Phrase" class="input-box">
+        <button onclick="login()" class="w-full bg-red-600 font-bold py-3 mt-6 hover:bg-red-700 transition uppercase tracking-widest">Authorize Session</button>
+        <p id="msg" class="text-xs text-red-500 mt-4 text-center"></p>
+    </div>
+
+    <script>
+        async function login() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            // Pointing to your existing main API on Port 3000
+            const res = await fetch('/api/admin/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+            const data = await res.json();
+            if (data.token) {
+                localStorage.setItem('xlip_token', data.token);
+                window.location.href = 'index.html';
+            } else {
+                document.getElementById('msg').innerText = "AUTHORIZATION FAILED";
+            }
+        }
+    </script>
+</body>
+</html>

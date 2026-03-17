@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Help & FAQ | xlip.uk URL Shortener</title>
+  <meta name="description" content="Get help with xlip.uk. Learn how to shorten links, create custom aliases, set up password-protected links, generate QR codes, and more.">
+  <meta name="author" content="UnsyncSoftware">
+  <link rel="canonical" href="https://xlip.uk/support.html">
+  <meta property="og:title" content="Help & FAQ | xlip.uk">
+  <meta property="og:description" content="Get help with xlip.uk — custom aliases, QR codes, password-protected links and more.">
+  <meta property="og:url" content="https://xlip.uk/support.html">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://xlip.uk/images/og-image.png">
+  <meta property="og:site_name" content="xlip.uk">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Help & FAQ | xlip.uk">
+  <meta name="twitter:image" content="https://xlip.uk/images/og-image.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy:        #0e1628;
+      --navy-light:  #152035;
+      --navy-border: #1e2d47;
+      --lime:        #b8d900;
+      --lime-dark:   #9ab800;
+      --text:        #cdd8f0;
+      --text-dim:    #5a6a85;
+      --text-muted:  #3a4a65;
+    }
+
+    html, body {
+      min-height: 100%;
+      background: var(--navy);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    body { display: flex; flex-direction: column; }
+
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 24px 40px;
+      border-bottom: 1px solid var(--navy-border);
+    }
+
+    .logo {
+      font-family: 'Space Mono', monospace;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--lime);
+      text-decoration: none;
+      letter-spacing: -0.02em;
+    }
+
+    .logo span { color: var(--text); }
+
+    nav a.back {
+      font-size: 12px;
+      color: var(--text-dim);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    nav a.back:hover { color: var(--text); }
+
+    .page {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 72px 40px 80px;
+      animation: fadeUp 0.5s ease both;
+    }
+
+    .page-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      color: var(--lime);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    .page h1 {
+      font-family: 'Space Mono', monospace;
+      font-size: clamp(24px, 4vw, 38px);
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.15;
+      margin-bottom: 12px;
+    }
+
+    .page h1 em { color: var(--lime); font-style: normal; }
+
+    .page-intro {
+      font-size: 15px;
+      color: var(--text-dim);
+      font-weight: 300;
+      line-height: 1.7;
+      margin-bottom: 56px;
+    }
+
+    .page-intro a { color: var(--lime); text-decoration: none; }
+
+    .category { margin-bottom: 48px; }
+
+    .category-title {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      color: var(--text-muted);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--navy-border);
+    }
+
+    .faq-item { border-bottom: 1px solid var(--navy-border); }
+
+    .faq-question {
+      width: 100%;
+      background: none;
+      border: none;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      text-align: left;
+      padding: 18px 0;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      transition: color 0.2s;
+    }
+
+    .faq-question:hover { color: var(--lime); }
+
+    .faq-icon {
+      font-family: 'Space Mono', monospace;
+      font-size: 18px;
+      color: var(--lime);
+      flex-shrink: 0;
+      transition: transform 0.25s;
+    }
+
+    .faq-item.open .faq-icon { transform: rotate(45deg); }
+
+    .faq-answer {
+      font-size: 14px;
+      color: var(--text-dim);
+      font-weight: 300;
+      line-height: 1.8;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease, padding 0.3s ease;
+    }
+
+    .faq-item.open .faq-answer {
+      max-height: 400px;
+      padding-bottom: 18px;
+    }
+
+    .faq-answer strong { color: var(--text); font-weight: 500; }
+    .faq-answer a { color: var(--lime); text-decoration: none; }
+    .faq-answer a:hover { text-decoration: underline; }
+
+    .contact-box {
+      background: var(--navy-light);
+      border: 1px solid var(--navy-border);
+      padding: 32px;
+      margin-top: 48px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    .contact-text h3 {
+      font-family: 'Space Mono', monospace;
+      font-size: 14px;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    .contact-text p {
+      font-size: 13px;
+      color: var(--text-dim);
+      font-weight: 300;
+      line-height: 1.6;
+    }
+
+    .btn-contact {
+      background: var(--lime);
+      color: var(--navy);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      padding: 12px 24px;
+      text-decoration: none;
+      white-space: nowrap;
+      transition: background 0.15s;
+      display: inline-block;
+      flex-shrink: 0;
+    }
+
+    .btn-contact:hover { background: var(--lime-dark); }
+
+    footer {
+      margin-top: auto;
+      padding: 24px 40px;
+      border-top: 1px solid var(--navy-border);
+      text-align: center;
+    }
+
+    .footer-tagline {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      color: var(--text-muted);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .footer-links a {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover { color: var(--text); }
+    .footer-links .sep { color: var(--text-muted); font-size: 11px; }
+    .footer-brand { font-size: 11px; color: var(--text-muted); margin-bottom: 10px; }
+    .footer-brand a { color: var(--lime); text-decoration: none; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 600px) {
+      nav, .page { padding-left: 20px; padding-right: 20px; }
+      .page { padding-top: 48px; }
+      .contact-box { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a href="/" class="logo">xlip<span>.uk</span></a>
+    <a href="/" class="back">← back to home</a>
+  </nav>
+
+  <div class="page">
+
+    <div class="page-label">Help Center</div>
+    <h1>Support &amp; <em>FAQ</em></h1>
+    <p class="page-intro">Everything you need to know about xlip.uk. Can't find your answer? Email us at <a href="/cdn-cgi/l/email-protection#15666065657a6761556d797c653b607e"><span class="__cf_email__" data-cfemail="592a2c2929362b2d1921353029772c32">[email&#160;protected]</span></a>.</p>
+
+    <!-- GETTING STARTED -->
+    <div class="category">
+      <div class="category-title">Getting Started</div>
+
+      <div class="faq-item">
+        <button class="faq-question" onclick="toggle(this)">
+          How do I shorten a link?
+          <span class="faq-icon">+</span>
+        </button>
+        <div class="faq-answer">
+          Paste your long URL into the input box on the homepage and click <strong>Shorten Link</strong>. Your short link appears instantly — click it to copy to clipboard. No account required.
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question" onclick="toggle(this)">
+          Do I need an account to use xlip.uk?
+          <span class="faq-icon">+</span>
+        </button>
+        <div class="faq-answer">
+          No. Guests can shorten up to <strong>5 links per hour</strong> without registering. However, guest links are anonymous — you can't manage, edit, or delete them later. A free account unlocks full link management and all pro features.
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question" onclick="toggle(this)">
+          What's the difference between a guest and a registered user?
+          <span class="faq-icon">+</span>
+        </button>
+        <div class="faq-answer">
+          <strong>Guests</strong> can shorten up to 5 links per hour with no account. Links are anonymous and cannot be edited or deleted.<br><br>
+          <strong>Registered users</strong> get unlimited link creation, a full dashboard, custom aliases, password-protected links, QR code generation, and click analytics — all completely free.
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ACCOUNT -->
+    <div class="category">
+      <div class="category-title">Account & Verification</div>
+
+      <div class="faq-item">
+        <button class="faq-question" onclick="toggle(this)">
+          How do I create an account?
+          <span class="faq-icon">+</span>
+        </button>
+        <div class="faq-answer">
+          Click <strong>Register</strong> on the homepage, enter your email and a password, then hit OK. We'll send a 6-digit verification code to your email. Enter the code to activate your account, then log in to access all features.
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question" onclick="toggle(this)">
+          I didn't receive my verification code. What do I do?
+          <span class="faq-icon">+</span>
+        </button>
+        <div class="faq-answer">
+          First, check your spam or junk folder. If it's not there, click <strong>Resend Code</strong> on the verification screen — a fresh code will be sent instantly. Codes expire after 15 minutes so enter it promptly. Still having issues? Email <a href="/cdn-cgi/l/email-protection#7a090f0a0a15080e3a0216130a540f11"><span class="__cf_email__" data-cfemail="65161015150a1711251d090c154b100e">[email&#160;protected]</span></a>.
+        </div>
+      </div>
+
+    </div>
+
+    <!-- PRO FEATURES -->
+    <div class="category">
+      <div class="category-title">Pro Features</div>
+
+      <div class="faq-item">
+        <button class="faq-question" onclick="toggle(this)">
+          What is a custom alias?
+          <span class="faq-icon">+</span>
+        </button>
+        <div class="faq-answer">
+          A custom alias lets you choose the ending of your short link instead of a random code. For example, instead of <strong>xlip.uk/xR7kQp</strong> you could have <strong>xlip.uk/my-sale</strong> or <strong>xlip.uk/portfolio</strong>. Custom aliases must be unique and are available to registered users only.
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question" onclick="toggle(this)">
+          How do password-protected links work?
+          <span class="faq-icon">+</span>
+        </button>
+        <div class="faq-answer">
+          In your dashboard, you can set a password on any of your links. Anyone who clicks the short link will be shown a password prompt before being redirected. Perfect for sharing private content with specific people.
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question" onclick="toggle(this)">
+          How do I generate a QR code for my link?
+          <span class="faq-icon">+</span>
+        </button>
+        <div class="faq-answer">
+          In your dashboard, find the link and click the <strong>QR</strong> button. A scannable QR code will pop up that you can screenshot, save, or print. Great for flyers, business cards, or posters.
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question" onclick="toggle(this)">
+          How do I delete a link?
+          <span class="faq-icon">+</span>
+        </button>
+        <div class="faq-answer">
+          Log in, go to your dashboard, find the link and click <strong>Delete</strong>. Deletion is permanent — the short URL will stop working immediately and cannot be recovered.
+        </div>
+      </div>
+
+    </div>
+
+    <!-- CONTACT BOX -->
+    <div class="contact-box">
+      <div class="contact-text">
+        <h3>Still need help?</h3>
+        <p>Can't find your answer? We're a small team but we read every email and will get back to you as soon as we can.</p>
+      </div>
+      <a href="/cdn-cgi/l/email-protection#e1929491918e9395a1998d8891cf948a" class="btn-contact">Email Support</a>
+    </div>
+
+  </div>
+
+  <footer>
+    <div class="footer-tagline">fast &nbsp;—&nbsp; reliable &nbsp;—&nbsp; secure</div>
+    <div class="footer-brand"><a href="https://unsyncsoftware.com">UnsyncSoftware.com</a></div>
+    <div class="footer-links">
+      <a href="/about.html">about us</a><span class="sep">|</span>
+      <a href="/support.html">support</a><span class="sep">|</span>
+      <a href="/legal.html">legal</a><span class="sep">|</span>
+      <a href="/privacy.html">privacy</a><span class="sep">|</span>
+      <a href="/donate.html">donate</a>
+    </div>
+  </footer>
+
+  <script data

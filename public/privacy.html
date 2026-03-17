@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy | xlip.uk</title>
+  <meta name="description" content="xlip.uk Privacy Policy. We collect only what's necessary. We don't sell your data. Ever.">
+  <meta name="author" content="UnsyncSoftware">
+  <link rel="canonical" href="https://xlip.uk/privacy.html">
+  <meta property="og:title" content="Privacy Policy | xlip.uk">
+  <meta property="og:description" content="We collect only what's necessary. We don't sell your data. Ever.">
+  <meta property="og:url" content="https://xlip.uk/privacy.html">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://xlip.uk/images/og-image.png">
+  <meta property="og:site_name" content="xlip.uk">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Privacy Policy | xlip.uk">
+  <meta name="twitter:image" content="https://xlip.uk/images/og-image.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy:        #0e1628;
+      --navy-light:  #152035;
+      --navy-border: #1e2d47;
+      --lime:        #b8d900;
+      --text:        #cdd8f0;
+      --text-dim:    #5a6a85;
+      --text-muted:  #3a4a65;
+    }
+
+    html, body {
+      min-height: 100%;
+      background: var(--navy);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    body { display: flex; flex-direction: column; }
+
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 24px 40px;
+      border-bottom: 1px solid var(--navy-border);
+    }
+
+    .logo {
+      font-family: 'Space Mono', monospace;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--lime);
+      text-decoration: none;
+      letter-spacing: -0.02em;
+    }
+
+    .logo span { color: var(--text); }
+
+    nav a.back {
+      font-size: 12px;
+      color: var(--text-dim);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    nav a.back:hover { color: var(--text); }
+
+    .page {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 72px 40px 80px;
+      animation: fadeUp 0.5s ease both;
+    }
+
+    .page-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      color: var(--lime);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    .page h1 {
+      font-family: 'Space Mono', monospace;
+      font-size: clamp(24px, 4vw, 38px);
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.15;
+      margin-bottom: 12px;
+    }
+
+    .last-updated {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 48px;
+      font-family: 'Space Mono', monospace;
+    }
+
+    .summary-box {
+      background: var(--navy-light);
+      border: 1px solid var(--navy-border);
+      border-left: 3px solid var(--lime);
+      padding: 24px;
+      margin-bottom: 48px;
+    }
+
+    .summary-box p {
+      font-size: 13px;
+      color: var(--text-dim);
+      line-height: 1.8;
+      font-weight: 300;
+    }
+
+    .summary-box p strong { color: var(--text); font-weight: 500; }
+
+    .section {
+      margin-bottom: 40px;
+      padding-bottom: 40px;
+      border-bottom: 1px solid var(--navy-border);
+    }
+
+    .section:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .section h2 {
+      font-family: 'Space Mono', monospace;
+      font-size: 13px;
+      color: var(--lime);
+      letter-spacing: 0.06em;
+      margin-bottom: 16px;
+    }
+
+    .section p {
+      font-size: 14px;
+      color: var(--text-dim);
+      line-height: 1.8;
+      font-weight: 300;
+      margin-bottom: 12px;
+    }
+
+    .section p:last-child { margin-bottom: 0; }
+    .section p strong { color: var(--text); font-weight: 500; }
+
+    .section ul {
+      margin: 8px 0 12px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .section ul li {
+      font-size: 14px;
+      color: var(--text-dim);
+      line-height: 1.7;
+      font-weight: 300;
+    }
+
+    .section ul li strong { color: var(--text); font-weight: 500; }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 13px;
+    }
+
+    .data-table th {
+      text-align: left;
+      padding: 10px 12px;
+      background: var(--navy-light);
+      color: var(--text-muted);
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-weight: 400;
+      border-bottom: 1px solid var(--navy-border);
+    }
+
+    .data-table td {
+      padding: 10px 12px;
+      color: var(--text-dim);
+      border-bottom: 1px solid var(--navy-border);
+      vertical-align: top;
+      font-weight: 300;
+      line-height: 1.6;
+    }
+
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table td:first-child { color: var(--text); font-weight: 400; }
+
+    .contact-note {
+      font-size: 13px;
+      color: var(--text-dim);
+      margin-top: 16px;
+      line-height: 1.8;
+    }
+
+    .contact-note a { color: var(--lime); text-decoration: none; }
+
+    footer {
+      margin-top: auto;
+      padding: 24px 40px;
+      border-top: 1px solid var(--navy-border);
+      text-align: center;
+    }
+
+    .footer-tagline {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      color: var(--text-muted);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .footer-links a {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover { color: var(--text); }
+    .footer-links .sep { color: var(--text-muted); font-size: 11px; }
+    .footer-brand { font-size: 11px; color: var(--text-muted); margin-bottom: 10px; }
+    .footer-brand a { color: var(--lime); text-decoration: none; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 600px) {
+      nav, .page { padding-left: 20px; padding-right: 20px; }
+      .page { padding-top: 48px; }
+      .data-table { font-size: 12px; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a href="/" class="logo">xlip<span>.uk</span></a>
+    <a href="/" class="back">← back to home</a>
+  </nav>
+
+  <div class="page">
+
+    <div class="page-label">Privacy</div>
+    <h1>Privacy Policy</h1>
+    <div class="last-updated">Last updated: February 2026</div>
+
+    <div class="summary-box">
+      <p><strong>The short version:</strong> We collect only what's necessary to run the service. We don't sell your data. We don't show you ads. We store your email and the links you create. You can request deletion of your data at any time by emailing us.</p>
+    </div>
+
+    <div class="section">
+      <h2>01 — Who We Are</h2>
+      <p>xlip.uk is operated by <strong>UnsyncSoftware</strong>, an indie software project based in the Philippines. If you have any questions about this policy, you can reach us at <a href="/cdn-cgi/l/email-protection#d9aaaca9a9b6abad99a1b5b0a9f7acb2" style="color:var(--lime)"><span class="__cf_email__" data-cfemail="32414742425d4046724a5e5b421c4759">[email&#160;protected]</span></a>.</p>
+    </div>
+
+    <div class="section">
+      <h2>02 — What We Collect</h2>
+      <p>We collect the minimum data necessary to provide the service:</p>
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>Why We Collect It</th>
+            <th>Who It Applies To</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Email address</td>
+            <td>Account creation, verification, and support</td>
+            <td>Registered users only</td>
+          </tr>
+          <tr>
+            <td>Password (hashed)</td>
+            <td>Account authentication — stored as a secure hash, never plain text</td>
+            <td>Registered users only</td>
+          </tr>
+          <tr>
+            <td>URLs you shorten</td>
+            <td>To provide the redirect service</td>
+            <td>All users</td>
+          </tr>
+          <tr>
+            <td>IP address</td>
+            <td>Click analytics and abuse prevention</td>
+            <td>All users (per click)</td>
+          </tr>
+          <tr>
+            <td>Click timestamps</td>
+            <td>To show you click analytics in your dashboard</td>
+            <td>Registered users</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>We do <strong>not</strong> collect your name, phone number, location, or any payment information directly. Donations are handled externally by Ko-fi and GCash.</p>
+    </div>
+
+    <div class="section">
+      <h2>03 — How We Use Your Data</h2>
+      <p>Your data is used exclusively to:</p>
+      <ul>
+        <li>Provide and operate the URL shortening service</li>
+        <li>Send you your email verification code on registration</li>
+        <li>Display click analytics on your dashboard</li>
+        <li>Detect and prevent abuse of the platform</li>
+        <li>Respond to support requests you initiate</li>
+      </ul>
+      <p>We do <strong>not</strong> use your data for advertising, profiling, or marketing. We do not sell or share your data with third parties.</p>
+    </div>
+
+    <div class="section">
+      <h2>04 — Cookies & Tracking</h2>
+      <p>xlip.uk does not use tracking cookies or third-party analytics tools. We do not use Google Analytics, Facebook Pixel, or similar services.</p>
+      <p>The only data stored in your browser is a <strong>JWT authentication token</strong> in localStorage, which keeps you logged in. This token is never shared with any third party and is cleared when you log out.</p>
+    </div>
+
+    <div class="section">
+      <h2>05 — Data Retention</h2>
+      <p>We retain your data for as long as your account is active. Guest links (created without an account) are stored indefinitely unless removed by an administrator for abuse violations.</p>
+      <p>If you delete a link from your dashboard, it is permanently removed from our database immediately.</p>
+    </div>
+
+    <div class="section">
+      <h2>06 — Your Rights</h2>
+      <p>You have the right to:</p>
+      <ul>
+        <li><strong>Access</strong> — request a copy of the data we hold about you</li>
+        <li><strong>Correction</strong> — request that we correct inaccurate data</li>
+        <li><strong>Deletion</strong> — request that we delete your account and all associated data</li>
+        <li><strong>Portability</strong> — request your data in a readable format</li>
+      </ul>
+      <p>To exercise any of these rights, email us at <a href="/cdn-cgi/l/email-protection#3e4d4b4e4e514c4a7e4652574e104b55" style="color:var(--lime)"><span class="__cf_email__" data-cfemail="94e7e1e4e4fbe6e0d4ecf8fde4bae1ff">[email&#160;protected]</span></a>. We will respond within 30 days.</p>
+    </div>
+
+    <div class="section">
+      <h2>07 — Third-Party Services</h2>
+      <p>xlip.uk uses the following third-party services:</p>
+      <ul>
+        <li><strong>Resend</strong> — for sending verification emails. Only your email address is shared for this purpose.</li>
+        <li><strong>Cloudflare</strong> — for DNS, CDN, and DDoS protection. Cloudflare may log request metadata as part of their service.</li>
+        <li><strong>Ko-fi</strong> — for optional donations. Donation processing is handled entirely by Ko-fi under their own privacy policy.</li>
+        <li><strong>GCash / InstaPay</strong> — for local donations. Transactions are handled by GCash under their own privacy policy.</li>
+      </ul>
+    </div>
+
+    <div class="section">
+      <h2>08 — Security</h2>
+      <p>We take reasonable steps to protect your data including:</p>
+      <ul>
+        <li>Passwords are hashed using <strong>bcrypt</strong> — never stored in plain text</li>
+        <li>All connections are encrypted via <strong>HTTPS / TLS</strong></li>
+        <li>Authentication uses short-lived <strong>JWT tokens</strong></li>
+        <li>Admin tools are restricted to private network access only</li>
+      </ul>
+      <p>No system is 100% secure. If you discover a security vulnerability, please disclose it responsibly by emailing <a href="/cdn-cgi/l/email-protection#b1c2c4c1c1dec3c5f1c9ddd8c19fc4da" style="color:var(--lime)"><span class="__cf_email__" data-cfemail="5d2e282d2d322f291d2531342d732836">[email&#160;protected]</span></a>.</p>
+    </div>
+
+    <div class="section">
+      <h2>09 — Changes to This Policy</h2>
+      <p>We may update this Privacy Policy from time to time. When we do, we'll update the date at the top of this page. Continued use of the service after changes means you accept the updated policy.</p>
+    </div>
+
+    <div class="section">
+      <h2>10 — Contact</h2>
+      <p>Questions, concerns, or data requests:</p>
+      <p class="contact-note">
+        📧 <a href="/cdn-cgi/l/email-protection#d6a5a3a6a6b9a4a296aebabfa6f8a3bd"><span class="__cf_email__" data-cfemail="99eaece9e9f6ebedd9e1f5f0e9b7ecf2">[email&#160;protected]</span></a><br>
+        🌐 <a href="https://unsyncsoftware.com">unsyncsoftware.com</a><br>
+        📍 Philippines
+      </p>
+    </div>
+
+  </div>
+
+  <footer>
+    <div class="footer-tagline">fast &nbsp;—&nbsp; reli

@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Terms of Service | xlip.uk</title>
+  <meta name="description" content="xlip.uk Terms of Service. Read our acceptable use policy, user rights, and legal information.">
+  <meta name="author" content="UnsyncSoftware">
+  <link rel="canonical" href="https://xlip.uk/legal.html">
+  <meta property="og:title" content="Terms of Service | xlip.uk">
+  <meta property="og:description" content="xlip.uk Terms of Service — acceptable use, user rights, and legal information.">
+  <meta property="og:url" content="https://xlip.uk/legal.html">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://xlip.uk/images/og-image.png">
+  <meta property="og:site_name" content="xlip.uk">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Terms of Service | xlip.uk">
+  <meta name="twitter:image" content="https://xlip.uk/images/og-image.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy:        #0e1628;
+      --navy-light:  #152035;
+      --navy-border: #1e2d47;
+      --lime:        #b8d900;
+      --text:        #cdd8f0;
+      --text-dim:    #5a6a85;
+      --text-muted:  #3a4a65;
+    }
+
+    html, body {
+      min-height: 100%;
+      background: var(--navy);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    body { display: flex; flex-direction: column; }
+
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 24px 40px;
+      border-bottom: 1px solid var(--navy-border);
+    }
+
+    .logo {
+      font-family: 'Space Mono', monospace;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--lime);
+      text-decoration: none;
+      letter-spacing: -0.02em;
+    }
+
+    .logo span { color: var(--text); }
+
+    nav a.back {
+      font-size: 12px;
+      color: var(--text-dim);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    nav a.back:hover { color: var(--text); }
+
+    .page {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 72px 40px 80px;
+      animation: fadeUp 0.5s ease both;
+    }
+
+    .page-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      color: var(--lime);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    .page h1 {
+      font-family: 'Space Mono', monospace;
+      font-size: clamp(24px, 4vw, 38px);
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.15;
+      margin-bottom: 12px;
+    }
+
+    .last-updated {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 48px;
+      font-family: 'Space Mono', monospace;
+    }
+
+    .section {
+      margin-bottom: 40px;
+      padding-bottom: 40px;
+      border-bottom: 1px solid var(--navy-border);
+    }
+
+    .section:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .section h2 {
+      font-family: 'Space Mono', monospace;
+      font-size: 13px;
+      color: var(--lime);
+      letter-spacing: 0.06em;
+      margin-bottom: 16px;
+    }
+
+    .section p {
+      font-size: 14px;
+      color: var(--text-dim);
+      line-height: 1.8;
+      font-weight: 300;
+      margin-bottom: 12px;
+    }
+
+    .section p:last-child { margin-bottom: 0; }
+
+    .section p strong { color: var(--text); font-weight: 500; }
+
+    .section ul {
+      margin: 8px 0 12px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .section ul li {
+      font-size: 14px;
+      color: var(--text-dim);
+      line-height: 1.7;
+      font-weight: 300;
+    }
+
+    .section ul li strong { color: var(--text); font-weight: 500; }
+
+    .highlight {
+      background: var(--navy-light);
+      border-left: 3px solid var(--lime);
+      padding: 16px 20px;
+      margin: 16px 0;
+      font-size: 13px;
+      color: var(--text-dim);
+      line-height: 1.7;
+    }
+
+    .contact-note {
+      font-size: 13px;
+      color: var(--text-dim);
+      margin-top: 16px;
+    }
+
+    .contact-note a {
+      color: var(--lime);
+      text-decoration: none;
+    }
+
+    footer {
+      margin-top: auto;
+      padding: 24px 40px;
+      border-top: 1px solid var(--navy-border);
+      text-align: center;
+    }
+
+    .footer-tagline {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      color: var(--text-muted);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .footer-links a {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover { color: var(--text); }
+    .footer-links .sep { color: var(--text-muted); font-size: 11px; }
+    .footer-brand { font-size: 11px; color: var(--text-muted); margin-bottom: 10px; }
+    .footer-brand a { color: var(--lime); text-decoration: none; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 600px) {
+      nav, .page { padding-left: 20px; padding-right: 20px; }
+      .page { padding-top: 48px; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a href="/" class="logo">xlip<span>.uk</span></a>
+    <a href="/" class="back">← back to home</a>
+  </nav>
+
+  <div class="page">
+
+    <div class="page-label">Legal</div>
+    <h1>Terms of Service</h1>
+    <div class="last-updated">Last updated: February 2026</div>
+
+    <div class="section">
+      <h2>01 — Acceptance of Terms</h2>
+      <p>By accessing or using xlip.uk, you agree to be bound by these Terms of Service. If you do not agree, please do not use the service.</p>
+      <p>xlip.uk is operated by <strong>UnsyncSoftware</strong>, based in the Philippines. We reserve the right to update these terms at any time. Continued use of the service after changes constitutes acceptance of the new terms.</p>
+    </div>
+
+    <div class="section">
+      <h2>02 — Use of the Service</h2>
+      <p>xlip.uk provides URL shortening services. You may use the service to shorten links for personal or commercial purposes, subject to the restrictions below.</p>
+      <p>You agree <strong>not</strong> to use xlip.uk to:</p>
+      <ul>
+        <li>Distribute malware, phishing pages, or any malicious content</li>
+        <li>Share illegal content including but not limited to piracy, CSAM, or content that violates applicable laws</li>
+        <li>Spam, harass, or deceive other users</li>
+        <li>Circumvent paywalls or access controls of other services</li>
+        <li>Automate link creation in bulk without prior written permission</li>
+        <li>Use the service in any way that could damage, overload, or impair our infrastructure</li>
+      </ul>
+    </div>
+
+    <div class="section">
+      <h2>03 — Guest vs Registered Users</h2>
+      <p>Guest users may create up to <strong>5 shortened links per hour</strong> without registering. Guest links are anonymous and cannot be managed or deleted after creation.</p>
+      <p>Registered users receive access to additional features including custom aliases, password-protected links, QR code generation, and a link management dashboard. Registration requires a valid email address and verification.</p>
+    </div>
+
+    <div class="section">
+      <h2>04 — Link Removal & Abuse</h2>
+      <p>We reserve the right to remove any shortened link at any time, without notice, if it is found to violate these terms or is reported as abusive.</p>
+      <div class="highlight">
+        If you discover a xlip.uk link pointing to harmful or illegal content, please report it immediately to <a href="/cdn-cgi/l/email-protection#2a595f5a5a45585e6a5246435a045f41" style="color:var(--lime)"><span class="__cf_email__" data-cfemail="b6c5c3c6c6d9c4c2f6cedadfc698c3dd">[email&#160;protected]</span></a>. We take abuse reports seriously and act promptly.
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>05 — Availability & Uptime</h2>
+      <p>xlip.uk is provided on an <strong>"as is" and "as available"</strong> basis. We do not guarantee 100% uptime or uninterrupted access to the service. We will not be liable for any loss or damage resulting from downtime, data loss, or service interruptions.</p>
+      <p>We reserve the right to modify, suspend, or discontinue the service at any time with or without notice.</p>
+    </div>
+
+    <div class="section">
+      <h2>06 — Intellectual Property</h2>
+      <p>All content, branding, and code associated with xlip.uk is the property of UnsyncSoftware. You may not reproduce, copy, or redistribute any part of the service without written permission.</p>
+      <p>You retain ownership of any content you link to via xlip.uk. By using the service, you grant us a limited, non-exclusive license to store and serve the URLs you submit for the purpose of providing the service.</p>
+    </div>
+
+    <div class="section">
+      <h2>07 — Limitation of Liability</h2>
+      <p>To the fullest extent permitted by law, UnsyncSoftware shall not be liable for any indirect, incidental, special, or consequential damages arising from your use of xlip.uk, including but not limited to loss of data, loss of revenue, or reputational damage.</p>
+      <p>Our total liability to you for any claim arising from the use of xlip.uk shall not exceed the amount you have paid us in the 12 months prior to the claim (which in most cases will be zero, as the service is free).</p>
+    </div>
+
+    <div class="section">
+      <h2>08 — Governing Law</h2>
+      <p>These terms are governed by the laws of the <strong>Republic of the Philippines</strong>. Any disputes arising from the use of xlip.uk shall be subject to the exclusive jurisdiction of the courts of the Philippines.</p>
+    </div>
+
+    <div class="section">
+      <h2>09 — Contact</h2>
+      <p>If you have questions about these terms, please contact us:</p>
+      <p class="contact-note">
+        📧 <a href="/cdn-cgi/l/email-protection#12616762627d6066526a7e7b623c6779"><span class="__cf_email__" data-cfemail="acdfd9dcdcc3ded8ecd4c0c5dc82d9c7">[email&#160;protected]</span></a><br>
+        🌐 <a href="https://unsyncsoftware.com">unsyncsoftware.com</a>
+      </p>
+    </div>
+
+  </div>
+
+  <footer>
+    <div class="footer-tagline">fast &nbsp;—&nbsp; reliable &nbsp;—&nbsp; secure</div>
+    <div class="footer-brand"><a href="https://unsyncsoftware.com">UnsyncSoftware.com</a></div>
+    <div class="footer-links">
+      <a href="/about.html">about us</a><span class="sep">|</span>
+      <a href="/support.ht

@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>xlip.uk | Pricing — Simple, Fair & Global</title>
+  <meta name="description" content="xlip.uk pricing — affordable link shortener plans for everyone, priced fairly by region.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy: #0e1628;
+      --navy-light: #152035;
+      --navy-border: #1e2d47;
+      --lime: #b8d900;
+      --lime-dark: #9ab800;
+      --text: #cdd8f0;
+      --text-dim: #5a6a85;
+      --text-muted: #3a4a65;
+      --green: #4caf7d;
+      --red: #e05a5a;
+      --gold: #f0a500;
+    }
+
+    html, body {
+      background: var(--navy);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 400;
+      min-height: 100vh;
+    }
+
+    /* ── NAV ── */
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 24px 40px;
+    }
+
+    .nav-logo {
+      font-family: 'Space Mono', monospace;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--lime);
+      text-decoration: none;
+      letter-spacing: -0.02em;
+    }
+
+    .nav-logo span { color: var(--text); }
+
+    .nav-links { display: flex; gap: 24px; align-items: center; }
+
+    .nav-links a {
+      font-size: 13px;
+      color: var(--text-dim);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover { color: var(--text); }
+
+    /* ── HERO ── */
+    .hero {
+      text-align: center;
+      padding: 60px 40px 40px;
+    }
+
+    .hero-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      color: var(--text-muted);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+      display: block;
+    }
+
+    .hero h1 {
+      font-family: 'Space Mono', monospace;
+      font-size: 36px;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.2;
+      margin-bottom: 16px;
+      letter-spacing: -0.02em;
+    }
+
+    .hero h1 span { color: var(--lime); }
+
+    .hero p {
+      font-size: 15px;
+      color: var(--text-dim);
+      font-weight: 300;
+      max-width: 480px;
+      margin: 0 auto 32px;
+      line-height: 1.6;
+    }
+
+    /* ── REGION DETECTED ── */
+    .region-banner {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--navy-light);
+      border: 1px solid var(--navy-border);
+      padding: 8px 16px;
+      font-size: 12px;
+      color: var(--text-dim);
+      margin-bottom: 8px;
+    }
+
+    .region-flag { font-size: 16px; }
+    .region-name { color: var(--lime); font-weight: 500; }
+
+    .region-change {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 11px;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      text-decoration: underline;
+      margin-left: 4px;
+      transition: color 0.2s;
+    }
+
+    .region-change:hover { color: var(--text); }
+
+    /* ── REGION SELECTOR ── */
+    .region-selector {
+      display: none;
+      justify-content: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 32px;
+    }
+
+    .region-selector.visible { display: flex; }
+
+    .region-btn {
+      background: var(--navy-light);
+      border: 1px solid var(--navy-border);
+      color: var(--text-dim);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 12px;
+      padding: 8px 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .region-btn:hover, .region-btn.active {
+      border-color: var(--lime);
+      color: var(--lime);
+    }
+
+    /* ── TRIAL BANNER ── */
+    .trial-banner {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: rgba(184, 217, 0, 0.08);
+      border: 1px solid rgba(184, 217, 0, 0.2);
+      padding: 12px 24px;
+      margin: 0 auto 48px;
+      max-width: 500px;
+      font-size: 13px;
+      color: var(--lime);
+    }
+
+    /* ── PRICING GRID ── */
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 0 40px;
+      background: var(--navy-border);
+    }
+
+    .plan-card {
+      background: var(--navy);
+      padding: 36px 32px;
+      position: relative;
+      transition: background 0.2s;
+    }
+
+    .plan-card:hover { background: var(--navy-light); }
+
+    .plan-card.featured {
+      background: var(--navy-light);
+      border-top: 2px solid var(--lime);
+    }
+
+    .featured-badge {
+      position: absolute;
+      top: -1px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--lime);
+      color: var(--navy);
+      font-family: 'Space Mono', monospace;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      padding: 3px 12px;
+      white-space: nowrap;
+    }
+
+    .plan-name {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      color: var(--text-muted);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    .plan-price {
+      margin-bottom: 4px;
+    }
+
+    .plan-price .amount {
+      font-family: 'Space Mono', monospace;
+      font-size: 40px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.03em;
+      transition: all 0.3s;
+    }
+
+    .plan-price .currency {
+      font-family: 'Space Mono', monospace;
+      font-size: 18px;
+      color: var(--text-dim);
+      vertical-align: top;
+      margin-top: 8px;
+      display: inline-block;
+    }
+
+    .plan-price .period {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .plan-links {
+      font-size: 22px;
+      font-family: 'Space Mono', monospace;
+      color: var(--lime);
+      margin-bottom: 4px;
+    }
+
+    .plan-links-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 28px;
+    }
+
+    .plan-divider {
+      height: 1px;
+      background: var(--navy-border);
+      margin-bottom: 24px;
+    }
+
+    .plan-features {
+      list-style: none;
+      margin-bottom: 32px;
+    }
+
+    .plan-features li {
+      font-size: 13px;
+      color: var(--text-dim);
+      font-weight: 300;
+      padding: 6px 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .plan-features li::before {
+      content: '—';
+      color: var(--text-muted);
+      font-size: 10px;
+      flex-shrink: 0;
+    }
+
+    .plan-features li.included { color: var(--text); }
+    .plan-features li.included::before { content: '✓'; color: var(--lime); }
+    .plan-features li.excluded { color: var(--text-muted); }
+    .plan-features li.excluded::before { content: '✗'; color: var(--text-muted); }
+
+    /* ── CTA BUTTONS ── */
+    .btn-primary {
+      width: 100%;
+      background: var(--lime);
+      color: var(--navy);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      padding: 14px;
+      border: none;
+      cursor: pointer;
+      transition: background 0.15s;
+      margin-bottom: 8px;
+      text-decoration: none;
+      display: block;
+      text-align: center;
+    }
+
+    .btn-primary:hover { background: var(--lime-dark); }
+
+    .btn-secondary {
+      width: 100%;
+      background: transparent;
+      border: 1px solid var(--navy-border);
+      color: var(--text-dim);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      padding: 12px;
+      cursor: pointer;
+      transition: all 0.15s;
+      text-decoration: none;
+      display: block;
+      text-align: center;
+    }
+
+    .btn-secondary:hover { border-color: var(--lime); color: var(--lime); }
+
+    /* ── PAYMENT METHODS ── */
+    .payment-methods {
+      display: flex;
+      gap: 6px;
+      justify-content: center;
+      margin-top: 8px;
+    }
+
+    .pay-badge {
+      font-family: 'Space Mono', monospace;
+      font-size: 9px;
+      color: var(--text-muted);
+      border: 1px solid var(--navy-border);
+      padding: 2px 8px;
+      letter-spacing: 0.05em;
+    }
+
+    /* ── FAQ ── */
+    .faq-section {
+      max-width: 640px;
+      margin: 80px auto 60px;
+      padding: 0 40px;
+    }
+
+    .faq-title {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      color: var(--text-muted);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-bottom: 32px;
+      text-align: center;
+    }
+
+    .faq-item {
+      border-bottom: 1px solid var(--navy-border);
+      padding: 20px 0;
+    }
+
+    .faq-q {
+      font-size: 14px;
+      color: var(--text);
+      font-weight: 500;
+      margin-bottom: 8px;
+    }
+
+    .faq-a {
+      font-size: 13px;
+      color: var(--text-dim);
+      font-weight: 300;
+      line-height: 1.6;
+    }
+
+    .faq-a a { color: var(--lime); text-decoration: none; }
+
+    /* ── VOUCHER ── */
+    .voucher-section {
+      text-align: center;
+      padding: 40px;
+      border-top: 1px solid var(--navy-border);
+      max-width: 860px;
+      margin: 0 auto;
+    }
+
+    .voucher-section p {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+
+    .voucher-section a {
+      color: var(--lime);
+      text-decoration: none;
+      font-size: 13px;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      padding: 20px 40px 28px;
+      text-align: center;
+      border-top: 1px solid var(--navy-border);
+    }
+
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .footer-links a {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover { color: var(--text); }
+    .footer-links .sep { color: var(--text-muted); font-size: 11px; }
+
+    /* ── MODAL ── */
+    #payment-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(10, 15, 28, 0.92);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #payment-modal.open { display: flex; }
+
+    .modal-card {
+      width: 100%;
+      max-width: 420px;
+      background: var(--navy);
+      border: 1px solid var(--navy-border);
+      padding: 36px;
+      position: relative;
+      animation: fadeUp 0.3s ease both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 18px;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+
+    .modal-close:hover { color: var(--text); }
+
+    .modal-title {
+      font-family: 'Space Mono', monospace;
+      font-size: 16px;
+      color: var(--lime);
+      margin-bottom: 4px;
+    }
+
+    .modal-subtitle {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+    }
+
+    .modal-plan-summary {
+      background: var(--navy-light);
+      border: 1px solid var(--navy-border);
+      padding: 14px 16px;
+      margin-bottom: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-plan-name {
+      font-family: 'Space Mono', monospace;
+      font-size: 12px;
+      color: var(--text);
+    }
+
+    .modal-plan-price {
+      font-family: 'Space Mono', monospace;
+      font-size: 18px;
+      color: var(--lime);
+    }
+
+    .pay-option {
+      width: 100%;
+      padding: 14px;
+      margin-bottom: 10px;
+      border: 1px solid var(--navy-border);
+      background: var(--navy-light);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+
+    .pay-option:hover { border-color: var(--lime); }
+
+    .pay-stripe { border-color: #635bff; }
+    .pay-stripe:hover { background: rgba(99, 91, 255, 0.1); border-color: #635bff; }
+
+    .pay-paypal { border-color: #003087; }
+    .pay-paypal:hover { background: rgba(0, 48, 135, 0.2); border-color: #00aeef; }
+
+    .modal-note {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-align: center;
+      margin-top: 16px;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 640px) {
+      .pricing-grid { grid-template-columns: 1fr; padding: 0 20px; }
+      .hero h1 { font-size: 24px; }
+      nav { padding: 16px 20px; }
+      .hero { padding: 40px 20px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <a href="/" class="nav-logo">xlip<span>.uk</span></a>
+    <div class="nav-links">
+      <a href="/">home</a>
+      <a href="/about.html">about</a>
+      <a href="/support.html">support</a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <div class="hero">
+    <span class="hero-label">Pricing</span>
+    <h1>Simple, fair &amp; <span>global</span></h1>
+    <p>We price xlip.uk fairly based on where you are. No tricks, no hidden fees, no ads. Ever.</p>
+
+    <!-- REGION DETECTED -->
+    <div class="region-banner" id="region-banner">
+      <span class="region-flag" id="region-flag">🌍</span>
+      <span>Showing prices for</span>
+      <span class="region-name" id="region-name">your region</span>
+      <button class="region-change" onclick="toggleRegionSelector()">change</button>
+    </div>
+
+    <!-- REGION SELECTOR -->
+    <div class="region-selector" id="region-selector">
+      <button class="region-btn" onclick="setRegion('tier1')">🇺🇸 US / UK / EU</button>
+      <button class="region-btn" onclick="setRegion('tier2')">🇧🇷 Brazil / Mexico / Turkey</button>
+      <button class="region-btn" onclick="setRegion('tier3')">🇵🇭 Philippines / India / Nigeria</button>
+    </div>
+
+    <!-- TRIAL BANNER -->
+    <div class="trial-banner">
+      🎉 Every new account gets a <strong>&nbsp;30-day free Pro trial&nbsp;</strong> — no credit card required
+    </div>
+  </div>
+
+  <!-- PRICING GRID -->
+  <div class="pricing-grid">
+
+    <!-- FREE -->
+    <div class="plan-card">
+      <div class="plan-name">Free</div>
+      <div class="plan-price">
+        <span class="amount">$0</span>
+        <span class="period"> / month</span>
+      </div>
+      <div class="plan-links" id="free-links">25</div>
+      <div class="plan-links-label">links per month</div>
+      <div class="plan-divider"></div>
+      <ul class="plan-features">
+        <li class="included">25 short links/month</li>
+        <li class="included">Click tracking</li>
+        <li class="included">Google Drive add-on</li>
+        <li class="included">Browser extension</li>
+        <li class="included">No ads ever</li>
+        <li class="excluded">Custom aliases</li>
+        <li class="excluded">Link analytics</li>
+        <li class="excluded">Password protection</li>
+        <li class="excluded">Link expiry</li>
+        <li class="excluded">QR codes</li>
+        <li class="excluded">Bio page</li>
+        <li class="excluded">API access</li>
+      </ul>
+      <a href="/" class="btn-secondary">Get started free</a>
+    </div>
+
+    <!-- PRO -->
+    <div class="plan-card featured">
+      <div class="featured-badge">MOST POPULAR</div>
+      <div class="plan-name">Pro</div>
+      <div class="plan-price">
+        <span class="currency">$</span><span class="amount" id="pro-price">8</span>
+        <span class="period"> / month</span>
+      </div>
+      <div class="plan-links" id="pro-links">200</div>
+      <div class="plan-links-label">links per month</div>
+      <div class="plan-divider"></div>
+      <ul class="plan-features">
+        <li class="included">200 short links/month</li>
+        <li class="included">Full click analytics</li>
+        <li class="included">Custom aliases</li>
+        <li class="included">Password protection</li>
+        <li class="included">Link expiry dates</li>
+        <li class="included">QR code generator</li>
+        <li class="included">Bio page</li>
+        <li class="included">Custom subdomain</li>
+        <li class="included">API access</li>
+        <li class="included">Google Drive add-on</li>
+        <li class="included">Browser extension</li>
+        <li class="included">No ads ever</li>
+      </ul>
+      <button class="btn-primary" onclick="openPayment('pro')">Upgrade to Pro →</button>
+      <div class="payment-methods">
+        <span class="pay-badge">STRIPE</span>
+        <span class="pay-badge">PAYPAL</span>
+      </div>
+    </div>
+
+    <!-- BUSINESS -->
+    <div class="plan-card">
+      <div class="plan-name">Business</div>
+      <div class="plan-price">
+        <span class="currency">$</span><span class="amount" id="business-price">15</span>
+        <span class="period"> / month</span>
+      </div>
+      <div class="plan-links" id="business-links">1000</div>
+      <div class="plan-links-label">links per month</div>
+      <div class="plan-divider"></div>
+      <ul class="plan-features">
+        <li class="included">1000 short links/month</li>
+        <li class="included">Everything in Pro</li>
+        <li class="included">Priority support</li>
+        <li class="included">Higher API rate limits</li>
+        <li class="included">Early access to features</li>
+        <li class="included">No ads ever</li>
+      </ul>
+      <button class="btn-primary" onclick="openPayment('business')" style="background:var(--navy-light); color:var(--lime); border:1px solid var(--lime);">Upgrade to Business →</button>
+      <div class="payment-methods">
+        <span class="pay-badge">STRIPE</span>
+        <span class="pay-badge">PAYPAL</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- VOUCHER -->
+  <div class="voucher-section">
+    <p>Can't afford a paid plan? We get it — that's why we have vouchers.</p>
+    <a href="/cdn-cgi/l/email-protection#94e7e1e4e4fbe6e0d4ecf8fde4bae1ffabe7e1f6fef1f7e0a9c2fbe1f7fcf1e6b4c6f1e5e1f1e7e0">Email us at <span class="__cf_email__" data-cfemail="1a696f6a6a75686e5a6276736a346f71">[email&#160;protected]</span></a>
+    <span style="color:var(--text-muted); font-size:13px;"> and we'll sort you out. No questions asked.</span>
+  </div>
+
+  <!-- FAQ -->
+  <div class="faq-section">
+    <div class="faq-title">Frequently Asked Questions</div>
+
+    <div class="faq-item">
+      <div class="faq-q">Do I need a credit card to start?</div>
+      <div class="faq-a">No. The free plan and 30-day Pro trial require no payment details at all.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">What happens when my trial ends?</div>
+      <div class="faq-a">You'll get an email 2 days before your trial ends. After 30 days you automatically move to the free plan — no charges ever without your consent.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">Why are prices different in different countries?</div>
+      <div class="faq-a">We use Purchasing Power Parity (PPP) pricing — the same idea used by companies like Notion and Figma. We want xlip.uk to be accessible to everyone, not just people in wealthy countries.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">Can I cancel anytime?</div>
+      <div class="faq-a">Yes. Cancel anytime from your dashboard — no questions asked. You keep Pro access until the end of your billing period.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">Do you show ads on my short links?</div>
+      <div class="faq-a">Never. Not on free, not on paid. xlip.uk is ad-free forever. Unlike some competitors who show full-page ads before redirecting — we think that's disrespectful to your audience.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">What payment methods do you accept?</div>
+      <div class="faq-a">We accept all major credit/debit cards via Stripe, and PayPal. More payment options coming soon.</div>
+    </div>
+
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-links">
+      <a href="/about.html">about</a><span class="sep">|</span>
+      <a href="/support.html">support</a><span class="sep">|</span>
+      <a href="/legal.html">legal</a><span class="sep">|</span>
+      <a href="/privacy.html">privacy</a><span class="sep">|</span>
+      <a href="/donate.html">donate</a>
+    </div>
+  </footer>
+
+  <!-- PAYMENT MODAL -->
+  <div id="payment-modal">
+    <div class="modal-card">
+      <button class="modal-close" onclick="closePayment()">✕</button>
+      <div class="modal-title">Upgrade xlip.uk</div>
+      <div class="modal-subtitle">Choose your payment method</div>
+
+      <div class="modal-plan-summary">
+        <span class="modal-plan-name" id="modal-plan-name">Pro Plan</span>
+        <span class="modal-plan-price" id="modal-plan-price">$8/mo</span>
+      </div>
+
+      <a href="#" class="pay-option pay-stripe" id="stripe-btn" target="_blank">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="#635bff"><path d="M13.976 9.15c-2.172-.806-3.356-1.426-3.356-2.409 0-.831.683-1.305 1.901-1.305 2.227 0 4.515.858 6.09 1.631l.89-5.494C18.252.975 15.697 0 12.165 0 9.667 0 7.589.654 6.104 1.872 4.56 3.147 3.757 4.992 3.757 7.218c0 4.039 2.467 5.76 6.476 7.219 2.585.92 3.445 1.574 3.445 2.583 0 .98-.84 1.545-2.354 1.545-1.875 0-4.965-.921-6.99-2.109l-.9 5.555C5.175 22.99 8.385 24 11.714 24c2.641 0 4.843-.624 6.328-1.813 1.664-1.305 2.525-3.236 2.525-5.732 0-4.128-2.524-5.851-6.591-7.305z"/></svg>
+        Pay with Stripe
+      </a>
+
+      <a href="#" class="pay-option pay-paypal" id="paypal-btn" target="_blank">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="#00aeef"><path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.01 1.15 1.304 2.42 1.012 4.287-.023.143-.047.288-.077.437-.983 5.05-4.349 6.797-8.647 6.797h-2.19c-.524 0-.968.382-1.05.9l-1.12 7.106zm14.146-14.42a3.35 3.35 0 0 0-.607-.541c-.013.076-.026.175-.041.254-.59 3.025-2.566 6.082-8.558 6.082h-2.19l-1.264 8.017h3.widths c.524 0 .968-.382 1.05-.9l1.12-7.106h2.168c4.26 0 6.793-2.078 7.593-5.806z"/></svg>
+        Pay with PayPal
+      </a>
+
+      <div class="modal-note">
+        🔒 Secure payment. Cancel anytime.<br>
+        You'll be redirected to complete payment securely.
+      </div>
+    </div>
+  </div>
+
+  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+    // ── PRICING DATA ──
+    const PRICING = {
+      tier1: { flag: '🇺🇸', name: 'US / UK / EU / AU', pro: 8, business: 15 },
+      tier2: { flag: '🇧🇷', name: 'Brazil / Mexico / Turkey', pro: 5, business: 10 },
+      tier3: { flag: '🇵🇭', name: 'Philippines / India / Nigeria', pro: 3, business: 8 }
+    };
+
+    // Stripe payment links (replace with real links after Stripe setup)
+    const STRIPE_LINKS = {
+      tier1: { pro: 'https://buy.stripe.com/REPLACE_PRO_T1', business: 'https://buy.stripe.com/REPLACE_BIZ_T1' },
+      tier2: { pro: 'https://buy.stripe.com/REPLACE_PRO_T2', business: 'https://buy.stripe.com/REPLACE_BIZ_T2' },
+      tier3: { pro: 'https://buy.stripe.com/REPLACE_PRO_T3', business: 'https://buy.stripe.com/REPLACE_BIZ_T3' }
+    };
+
+    // PayPal payment links (replace with real links after PayPal setup)
+    const PAYPAL_LINKS = {
+      tier1: { pro: 'https://www.paypal.com/ncp/payment/NZ6DFZLRGRT7C', business: 'https://www.paypal.com/ncp/payment/8ZY86SENMFSES' },
+      tier2: { pro: 'https://www.paypal.com/ncp/payment/U2J5KQW3WSZYN', business: 'https://www.paypal.com/ncp/payment/MESUVJW7WDNUJ' },
+      tier3: { pro: 'https://www.paypal.com/ncp/payment/ZN99LDTAEKBLS', business: 'https://www.paypal.com/ncp/payment/Z67KRZHFS425U' }
+    };
+
+    let currentTier = 'tier1';
+    let currentPlan = 'pro';
+
+    // ── GET USER ID FROM JWT ──
+    function getUserIdFromToken() {
+      try {
+        const token = localStorage.getItem('xlip_token');
+        if (!token) return null;
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        return payload.userId || payload.id || null;
+      } catch {
+        return null;
+      }
+    }
+
+    // ── GEO DETECT ──
+    async function detectRegion() {
+      try {
+        const res = await fetch('https://ipapi.co/json/');
+        const data = await res.json();
+        const country = data.country_code;
+
+        const tier3Countries = ['PH', 'IN', 'PK', 'NG', 'BD', 'ET', 'TZ', 'KE', 'GH', 'UG', 'MM', 'KH', 'NP'];
+        const tier2Countries = ['BR', 'MX', 'TR', 'ZA', 'AR', 'CO', 'PE', 'VN', 'ID', 'TH', 'UA', 'EG', 'MA'];
+
+        if (tier3Countries.includes(country)) setRegion('tier3');
+        else if (tier2Countries.includes(country)) setRegion('tier2');
+        else setRegion('tier1');
+
+      } catch {
+        setRegion('tier1'); // Default to tier1 if detection fails
+      }
+    }
+
+    function setRegion(tier) {
+      currentTier = tier;
+      const r = PRICING[tier];
+
+      document.getElementById('region-flag').innerText = r.flag;
+      document.getElementById('region-name').innerText = r.name;
+      document.getElementById('pro-price').innerText = r.pro;
+      document.getElementById('business-price').innerText = r.business;
+
+      // Update active button
+      document.querySelectorAll('.region-btn').forEach(b => b.classList.remove('active'));
+      const btns = document.querySelectorAll('.region-btn');
+      if (tier === 'tier1') btns[0].classList.add('active');
+      if (tier === 'tier2') btns[1].classList.add('active');
+      if (tier === 'tier3') btns[2].classList.add('active');
+
+      // Hide selector
+      document.getElementById('region-selector').classList.remove('visible');
+    }
+
+    function toggleRegionSelector() {
+      document.getElementById('region-selector').classList.toggle('visible');
+    }
+
+    // ── PAYMENT MODAL ──
+    function openPayment(plan) {
+      currentPlan = plan;
+      const tier = PRICING[currentTier];
+      const price = plan === 'pro' ? tier.pro : tier.business;
+      const planName = plan === 'pro' ? 'Pro Plan' : 'Business Plan';
+
+      document.getElementById('modal-plan-name').innerText = planName;
+      document.getElementById('modal-plan-price').innerText = `$${price}/mo`;
+
+      // Append user ID to PayPal link for auto-upgrade
+      const userId = getUserIdFromToken();
+      const userParam = userId ? `?custom=uid_${userId}` : '';
+
+      document.getElementById('stripe-btn').href = STRIPE_LINKS[currentTier][plan] + userParam;
+      document.getElementById('paypal-btn').href = PAYPAL_LINKS[currentTier][plan] + userParam;
+
+      // Warn if not logged in
+      if (!userId) {
+        document.getElementById('modal-subtitle').innerText = '⚠️ Log in first so we can upgrade your account automatically.';
+      } else {
+        document.getElementById('modal-subtitle').innerText = 'Choose your payment method';
+      }
+
+      document.getElementById('payment-modal').classList.add('open');
+    }
+
+    function closePayment() {
+      document.getElementById('payment-modal').classList.remove('

@@ -1,0 +1,30 @@
+# Dependencies
+node_modules/
+
+# Environment variables — NEVER commit these
+.env
+.env.*
+!.env.example
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# PM2
+.pm2/
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+dist/
+build/
+
+# Editor
+.vscode/
+.idea/
+*.save
+*.save.*
+mnt/

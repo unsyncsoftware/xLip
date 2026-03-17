@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>xlip.uk | Bio Editor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy:        #0e1628;
+      --navy-light:  #152035;
+      --navy-border: #1e2d47;
+      --lime:        #b8d900;
+      --lime-dark:   #9ab800;
+      --text:        #cdd8f0;
+      --text-dim:    #5a6a85;
+      --text-muted:  #3a4a65;
+      --error:       #e05a5a;
+      --success:     #4caf7d;
+    }
+
+    html, body {
+      min-height: 100%;
+      background: var(--navy);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    /* ── NAV ── */
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 40px;
+      border-bottom: 1px solid var(--navy-border);
+      position: sticky;
+      top: 0;
+      background: var(--navy);
+      z-index: 100;
+    }
+
+    .logo {
+      font-family: 'Space Mono', monospace;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--lime);
+      text-decoration: none;
+    }
+
+    .logo span { color: var(--text); }
+
+    .nav-actions { display: flex; gap: 12px; align-items: center; }
+
+    .btn { padding: 9px 20px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; border: none; transition: all 0.15s; text-decoration: none; display: inline-block; }
+    .btn-primary { background: var(--lime); color: var(--navy); }
+    .btn-primary:hover { background: var(--lime-dark); }
+    .btn-ghost { background: transparent; color: var(--text-dim); border: 1px solid var(--navy-border); }
+    .btn-ghost:hover { color: var(--text); border-color: var(--text-dim); }
+    .btn-danger { background: transparent; color: var(--error); border: 1px solid var(--error); }
+    .btn-danger:hover { background: var(--error); color: white; }
+
+    /* ── LAYOUT ── */
+    .editor-layout {
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 0;
+      min-height: calc(100vh - 65px);
+    }
+
+    /* ── EDITOR PANEL ── */
+    .editor-panel {
+      padding: 40px;
+      border-right: 1px solid var(--navy-border);
+      overflow-y: auto;
+    }
+
+    .section-heading {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      color: var(--text-muted);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--navy-border);
+    }
+
+    .form-group { margin-bottom: 20px; }
+
+    label {
+      display: block;
+      font-size: 11px;
+      color: var(--text-dim);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      font-family: 'Space Mono', monospace;
+    }
+
+    input[type="text"],
+    input[type="url"],
+    input[type="color"],
+    textarea {
+      width: 100%;
+      background: var(--navy-light);
+      border: 1px solid var(--navy-border);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      padding: 10px 14px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    input[type="text"]:focus,
+    input[type="url"]:focus,
+    textarea:focus { border-color: var(--lime); }
+
+    input[type="color"] {
+      height: 42px;
+      padding: 4px 8px;
+      cursor: pointer;
+    }
+
+    textarea { resize: vertical; min-height: 80px; }
+
+    .username-row {
+      display: flex;
+      align-items: center;
+      gap: 0;
+    }
+
+    .username-prefix {
+      background: var(--navy-border);
+      color: var(--text-muted);
+      font-family: 'Space Mono', monospace;
+      font-size: 13px;
+      padding: 10px 12px;
+      border: 1px solid var(--navy-border);
+      border-right: none;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .username-row input { flex: 1; }
+
+    .username-status {
+      font-size: 11px;
+      margin-top: 6px;
+      min-height: 16px;
+    }
+
+    .username-status.ok { color: var(--success); }
+    .username-status.taken { color: var(--error); }
+
+    .color-row { display: flex; gap: 12px; align-items: center; }
+    .color-presets { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    .color-preset {
+      width: 28px;
+      height: 28px;
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: transform 0.15s;
+      flex-shrink: 0;
+    }
+
+    .color-preset:hover { transform: scale(1.15); }
+    .color-preset.active { border-color: white; }
+
+    .social-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .social-item { position: relative; }
+
+    .social-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 14px;
+      pointer-events: none;
+    }
+
+    .social-item input { padding-left: 36px; }
+
+    /* ── AVATAR ── */
+    .avatar-section {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+
+    .avatar-preview {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--navy-border);
+      background: var(--navy-light);
+      flex-shrink: 0;
+    }
+
+    .avatar-upload-btn {
+      background: transparent;
+      border: 1px solid var(--navy-border);
+      color: var(--text-dim);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 12px;
+      padding: 8px 16px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .avatar-upload-btn:hover { border-color: var(--lime); color: var(--lime); }
+
+    /* ── BIO LINKS ── */
+    .bio-links-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
+
+    .bio-link-item {
+      background: var(--navy-light);
+      border: 1px solid var(--navy-border);
+      padding: 16px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      transition: border-color 0.15s;
+    }
+
+    .bio-link-item:hover { border-color: var(--text-muted); }
+
+    .bio-link-thumb {
+      width: 48px;
+      height: 48px;
+      object-fit: cover;
+      flex-shrink: 0;
+      background: var(--navy-border);
+    }
+
+    .bio-link-thumb-placeholder {
+      width: 48px;
+      height: 48px;
+      background: var(--navy-border);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    .bio-link-info { flex: 1; min-width: 0; }
+
+    .bio-link-title {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .bio-link-url {
+      font-size: 12px;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .bio-link-clicks {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      color: var(--lime);
+      margin-top: 4px;
+    }
+
+    .bio-link-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+    .icon-btn {
+      background: none;
+      border: 1px solid var(--navy-border);
+      color: var(--text-dim);
+      width: 28px;
+      height: 28px;
+      cursor: pointer;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+    }
+
+    .icon-btn:hover { border-color: var(--lime); color: var(--lime); }
+    .icon-btn.del:hover { border-color: var(--error); color: var(--error); }
+
+    /* ── ADD LINK FORM ── */
+    .add-link-form {
+      background: var(--navy-light);
+      border: 1px solid var(--navy-border);
+      padding: 20px;
+      display: none;
+      margin-bottom: 12px;
+    }
+
+    .add-link-form.open { display: block; }
+
+    .add-link-thumb-preview {
+      width: 60px;
+      height: 60px;
+      object-fit: cover;
+      border: 1px solid var(--navy-border);
+      margin-top: 8px;
+      display: none;
+    }
+
+    /* ── EDITOR SECTIONS ── */
+    .editor-section { margin-bottom: 40px; }
+
+    /* ── PREVIEW PANEL ── */
+    .preview-panel {
+      background: var(--navy-light);
+      padding: 40px 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: sticky;
+      top: 65px;
+      height: calc(100vh - 65px);
+      overflow-y: auto;
+    }
+
+    .preview-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 9px;
+      color: var(--text-muted);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+      align-self: flex-start;
+    }
+
+    .phone-frame {
+      width: 280px;
+      min-height: 500px;
+      border: 2px solid var(--navy-border);
+      border-radius: 32px;
+      overflow: hidden;
+      background: var(--navy);
+      padding: 24px 16px;
+      transition: all 0.3s;
+    }
+
+    .preview-avatar {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin: 0 auto 12px;
+      display: block;
+      border: 2px solid var(--navy-border);
+      background: var(--navy-border);
+    }
+
+    .preview-name {
+      font-family: 'Space Mono', monospace;
+      font-size: 15px;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 6px;
+      color: var(--text);
+    }
+
+    .preview-bio {
+      font-size: 12px;
+      color: var(--text-dim);
+      text-align: center;
+      line-height: 1.6;
+      margin-bottom: 16px;
+      font-weight: 300;
+    }
+
+    .preview-socials {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .preview-social-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      text-decoration: none;
+      transition: transform 0.15s;
+    }
+
+    .preview-social-icon:hover { transform: scale(1.1); }
+
+    .preview-links { display: flex; flex-direction: column; gap: 10px; }
+
+    .preview-link {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border: 1px solid var(--navy-border);
+      text-decoration: none;
+      transition: border-color 0.15s;
+      background: var(--navy-light);
+    }
+
+    .preview-link-thumb {
+      width: 36px;
+      height: 36px;
+      object-fit: cover;
+      flex-shrink: 0;
+      background: var(--navy-border);
+    }
+
+    .preview-link-title {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text);
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: var(--navy-light);
+      border: 1px solid var(--navy-border);
+      color: var(--text);
+      font-size: 13px;
+      padding: 12px 24px;
+      z-index: 999;
+      transition: transform 0.3s;
+    }
+
+    .toast.show { transform: translateX(-50%) translateY(0); }
+    .toast.success { border-color: var(--success); color: var(--success); }
+    .toast.error { border-color: var(--error); color: var(--error); }
+
+    .bio-url-display {
+      background: var(--navy-light);
+      border: 1px solid var(--navy-border);
+      padding: 10px 14px;
+      font-family: 'Space Mono', monospace;
+      font-size: 12px;
+      color: var(--lime);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 8px;
+    }
+
+    .copy-url-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 14px;
+      transition: color 0.15s;
+    }
+
+    .copy-url-btn:hover { color: var(--lime); }
+
+    @media (max-width: 900px) {
+      .editor-layout { grid-template-columns: 1fr; }
+      .preview-panel { display: none; }
+      nav, .editor-panel { padding-left: 20px; padding-right: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a href="/" class="logo">xlip<span>.uk</span></a>
+    <div class="nav-actions">
+      <a href="/" class="btn btn-ghost">← dashboard</a>
+      <button class="btn btn-primary" onclick="saveProfile()">save profile</button>
+    </div>
+  </nav>
+
+  <div class="editor-layout">
+
+    <!-- ── EDITOR PANEL ── -->
+    <div class="editor-panel">
+
+      <!-- PROFILE -->
+      <div class="editor-section">
+        <div class="section-heading">Profile</div>
+
+        <!-- Avatar -->
+        <div class="avatar-section">
+          <img id="avatar-img" src="/images/og-image.png" class="avatar-preview" alt="avatar">
+          <div>
+            <button class="avatar-upload-btn" onclick="document.getElementById('avatar-input').click()">
+              Upload Photo
+            </button>
+            <input type="file" id="avatar-input" accept="image/*" style="display:none" onchange="uploadAvatar(this)">
+            <div style="font-size:11px; color:var(--text-muted); margin-top:6px;">Max 5MB. JPG, PNG, GIF, WEBP.</div>
+          </div>
+        </div>
+
+        <!-- Username -->
+        <div class="form-group">
+          <label>Username</label>
+          <div class="username-row">
+            <div class="username-prefix">xlip.uk/</div>
+            <input type="text" id="username" placeholder="yourname" maxlength="30"
+              oninput="checkUsername(this.value)">
+          </div>
+          <div class="username-status" id="username-status"></div>
+        </div>
+
+        <!-- Display Name -->
+        <div class="form-group">
+          <label>Display Name</label>
+          <input type="text" id="display-name" placeholder="Your Name" maxlength="60">
+        </div>
+
+        <!-- Bio -->
+        <div class="form-group">
+          <label>Bio</label>
+          <textarea id="bio" placeholder="Tell people about yourself..." maxlength="160" oninput="updatePreview()"></textarea>
+        </div>
+
+        <!-- Accent Color -->
+        <div class="form-group">
+          <label>Accent Color</label>
+          <div class="color-row">
+            <input type="color" id="accent-color" value="#b8d900" oninput="updatePreview()">
+            <div class="color-presets">
+              <div class="color-preset active" style="background:#b8d900" onclick="setColor('#b8d900')"></div>
+              <div class="color-preset" style="background:#00d4ff" onclick="setColor('#00d4ff')"></div>
+              <div class="color-preset" style="background:#ff6b6b" onclick="setColor('#ff6b6b')"></div>
+              <div class="color-preset" style="background:#a78bfa" onclick="setColor('#a78bfa')"></div>
+              <div class="color-preset" style="background:#fb923c" onclick="setColor('#fb923c')"></div>
+              <div class="color-preset" style="background:#34d399" onclick="setColor('#34d399')"></div>
+              <div class="color-preset" style="background:#f472b6" onclick="setColor('#f472b6')"></div>
+              <div class="color-preset" style="background:#ffffff" onclick="setColor('#ffffff')"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SOCIAL LINKS -->
+      <div class="editor-section">
+        <div class="section-heading">Social Media</div>
+        <div class="social-grid">
+          <div class="social-item form-group">
+            <label>Instagram</label>
+            <span class="social-icon">📸</span>
+            <input type="text" id="instagram" placeholder="username" oninput="updatePreview()">
+          </div>
+          <div class="social-item form-group">
+            <label>Twitter / X</label>
+            <span class="social-icon">𝕏</span>
+            <input type="text" id="twitter" placeholder="username" oninput="updatePreview()">
+          </div>
+          <div class="social-item form-group">
+            <label>TikTok</label>
+            <span class="social-icon">🎵</span>
+            <input type="text" id="tiktok" placeholder="username" oninput="updatePreview()">
+          </div>
+          <div class="social-item form-group">
+            <label>YouTube</label>
+            <span class="social-icon">▶️</span>
+            <input type="text" id="youtube" placeholder="username" oninput="updatePreview()">
+          </div>
+          <div class="social-item form-group">
+            <label>Facebook</label>
+            <span class="social-icon">📘</span>
+            <input type="text" id="facebook" placeholder="username" oninput="updatePreview()">
+          </div>
+        </div>
+      </div>
+
+      <!-- BIO LINKS -->
+      <div class="editor-section">
+        <div class="section-heading">Links</div>
+
+        <div class="bio-links-list" id="bio-links-list">
+          <!-- links render here -->
+        </div>
+
+        <!-- Add Link Form -->
+        <div class="add-link-form" id="add-link-form">
+          <div class="form-group">
+            <label>Link Title</label>
+            <input type="text" id="new-link-title" placeholder="e.g. My Portfolio">
+          </div>
+          <div class="form-group">
+            <label>URL</label>
+            <input type="url" id="new-link-url" placeholder="https://...">
+          </div>
+          <div class="form-group">
+            <label>Thumbnail Image</label>
+            <button class="avatar-upload-btn" onclick="document.getElementById('link-image-input').click()">
+              Choose Image
+            </button>
+            <input type="file" id="link-image-input" accept="image/*" style="display:none" onchange="previewLinkImage(this)">
+            <img id="link-thumb-preview" class="add-link-thumb-preview" alt="preview">
+          </div>
+          <div style="display:flex; gap:8px; margin-top:4px;">
+            <button class="btn btn-primary" onclick="addLink()" style="flex:1">add link</button>
+            <button class="btn btn-ghost" onclick="closeAddLink()">cancel</button>
+          </div>
+        </div>
+
+        <button class="btn btn-ghost" onclick="openAddLink()" id="add-link-btn" style="width:100%">
+          + add link
+        </button>
+      </div>
+
+    </div>
+
+    <!-- ── PREVIEW PANEL ── -->
+    <div class="preview-panel">
+      <div class="preview-label">Live Preview</div>
+
+      <div class="phone-frame" id="phone-preview">
+        <img id="preview-avatar" src="/images/og-image.png" class="preview-avatar" alt="avatar">
+        <div class="preview-name" id="preview-name">Your Name</div>
+        <div class="preview-bio" id="preview-bio">Your bio will appear here...</div>
+        <div class="preview-socials" id="preview-socials"></div>
+        <div class="preview-links" id="preview-links"></div>
+      </div>
+
+      <div id="bio-url-box" style="margin-top:20px; width:280px; display:none;">
+        <div style="font-size:11px; color:var(--text-muted); margin-bottom:6px; font-family:'Space Mono',monospace; letter-spacing:0.1em; text-transform:uppercase;">Your Bio Link</div>
+        <div class="bio-url-display">
+          <span id="bio-url-text">xlip.uk/</span>
+          <button class="copy-url-btn" onclick="copyBioUrl()" title="Copy">⎘</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const token = localStorage.getItem('xlip_token');
+    if (!token) window.location.href = '/';
+
+    const authHeader = { 'Authorization': `Bearer ${token}` };
+    let bioLinks = [];
+    let usernameTimer = null;
+    let currentUsername = '';
+
+    // ── LOAD PROFILE ──
+    async function loadProfile() {
+      const res = await fetch('/api/bio/profile', { headers: authHeader });
+      const data = await res.json();
+      if (!data) return;
+
+      document.getElementById('username').value = data.username || '';
+      document.getElementById('display-name').value = data.display_name || '';
+      document.getElementById('bio').value = data.bio || '';
+      document.getElementById('accent-color').value = data.accent_color || '#b8d900';
+      document.getElementById('instagram').value = data.instagram || '';
+      document.getElementById('twitter').value = data.twitter || '';
+      document.getElementById('tiktok').value = data.tiktok || '';
+      document.getElementById('youtube').value = data.youtube || '';
+      document.getElementById('facebook').value = data.facebook || '';
+
+      if (data.avatar_url) {
+        document.getElementById('avatar-img').src = data.avatar_url;
+        document.getElementById('preview-avatar').src = data.avatar_url;
+      }
+
+      currentUsername = data.username || '';
+      bioLinks = data.links || [];
+      renderLinks();
+      updatePreview();
+
+      // Show bio URL
+      if (data.username) {
+        document.getElementById('bio-url-box').style.display = 'block';
+        document.getElementById('bio-url-text').textContent = `xlip.uk/${data.username}`;
+      }
+
+      // Set active color preset
+      document.querySelectorAll('.color-preset').forEach(p => {
+        p.classList.toggle('active', p.style.background === data.accent_color);
+      });
+    }
+
+    // ── SAVE PROFILE ──
+    async function saveProfile() {
+      const username = document.getElementById('username').value.trim();
+      const statusEl = document.getElementById('username-status');
+
+      if (!username) { showToast('Username is required', 'error'); return; }
+      if (statusEl.classList.contains('taken')) { showToast('Username is taken', 'error'); return; }
+
+      const payload = {
+        username,
+        display_name: document.getElementById('display-name').value,
+        bio: document.getElementById('bio').value,
+        accent_color: document.getElementById('accent-color').value,
+        instagram: document.getElementById('instagram').value,
+        twitter: document.getElementById('twitter').value,
+        tiktok: document.getElementById('tiktok').value,
+        youtube: document.getElementById('youtube').value,
+        facebook: document.getElementById('facebook').value,
+      };
+
+      const res = await fetch('/api/bio/profile', {
+        method: 'POST',
+        headers: { ...authHeader, 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        currentUsername = username;
+        document.getElementById('bio-url-box').style.display = 'block';
+        document.getElementById('bio-url-text').textContent = `xlip.uk/${username}`;
+        showToast('Profile saved!', 'success');
+      } else {
+        showToast(data.error || 'Save failed', 'error');
+      }
+    }
+
+    // ── USERNAME CHECK ──
+    function checkUsername(val) {
+      updatePreview();
+      clearTimeout(usernameTimer);
+      const statusEl = document.getElementById('username-status');
+
+      if (!val || val === currentUsername) { statusEl.textContent = ''; return; }
+      if (!/^[a-zA-Z0-9_-]{3,30}$/.test(val)) {
+        statusEl.textContent = 'Letters, numbers, _ or - only (3-30 chars)';
+        statusEl.className = 'username-status taken';
+        return;
+      }
+
+      statusEl.textContent = 'Checking...';
+      statusEl.className = 'username-status';
+
+      usernameTimer = setTimeout(async () => {
+        const res = await fetch(`/api/bio/check-username/${val}`);
+        const data = await res.json();
+        if (data.available) {
+          statusEl.textContent = '✓ Available';
+          statusEl.className = 'username-status ok';
+        } else {
+          statusEl.textContent = '✗ Already taken';
+          statusEl.className = 'username-status taken';
+        }
+      }, 500);
+    }
+
+    // ── COLOR ──
+    function setColor(hex) {
+      document.getElementById('accent-color').value = hex;
+      document.querySelectorAll('.color-preset').forEach(p => {
+        p.classList.toggle('active', p.style.background === hex);
+      });
+      updatePreview();
+    }
+
+    // ── AVATAR UPLOAD ──
+    async function uploadAvatar(input) {
+      const file = input.files[0];
+      if (!file) return;
+
+      const formData = new FormData();
+      formData.append('avatar', file);
+
+      const res = await fetch('/api/bio/avatar', {
+        method: 'POST',
+        headers: authHeader,
+        body: formData
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        document.getElementById('avatar-img').src = data.avatar_url;
+        document.getElementById('preview-avatar').src = data.avatar_url;
+        showToast('Avatar updated!', 'success');
+      } else {
+        showToast(data.error || 'Upload failed', 'error');
+      }
+    }
+
+    // ── LINK IMAGE PREVIEW ──
+    function previewLinkImage(input) {
+      const file = input.files[0];
+      if (!file) return;
+      const preview = document.getElementById('link-thumb-preview');
+      preview.src = URL.createObjectURL(file);
+      preview.style.display = 'block';
+    }
+
+    // ── ADD LINK ──
+    function openAddLink() {
+      document.getElementById('add-link-form').classList.add('open');
+      document.getElementById('add-link-btn').style.display = 'none';
+    }
+
+    function closeAddLink() {
+      document.getElementById('add-link-form').classList.remove('open');
+      document.getElementById('add-link-btn').style.display = 'block';
+      document.getElementById('new-link-title').value = '';
+      document.getElementById('new-link-url').value = '';
+      document.getElementById('link-image-input').value = '';
+      document.getElementById('link-thumb-preview').style.display = 'none';
+    }
+
+    async function addLink() {
+      const title = document.getElementById('new-link-title').value.trim();
+      const url = document.getElementById('new-link-url').value.trim();
+      const imageInput = document.getElementById('link-image-input');
+
+      if (!title || !url) { showToast('Title and URL are required', 'error'); return; }
+
+      const formData = new FormData();
+      formData.append('title', title);
+      formData.append('url', url);
+      if (imageInput.files[0]) formData.append('image', imageInput.files[0]);
+
+      const res = await fetch('/api/bio/links', {
+        method: 'POST',
+        headers: authHeader,
+        body: formData
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        bioLinks.push(data);
+        renderLinks();
+        updatePreview();
+        closeAddLink();
+        showToast('Link added!', 'success');
+      } else {
+        showToast(data.error || 'Failed to add link', 'error');
+      }
+    }
+
+    // ── DELETE LINK ──
+    async function deleteLink(id) {
+      if (!confirm('Delete this link?')) return;
+
+      const res = await fetch(`/api/bio/links/${id}`, {
+        method: 'DELETE',
+        headers: authHeader
+      });
+
+      if (res.ok) {
+        bioLinks = bioLinks.filter(l => l.id !== id);
+        renderLinks();
+        updatePreview();
+        showToast('Link deleted', 'success');
+      } else {
+        showToast('Delete failed', 'error');
+      }
+    }
+
+    // ── TOGGLE LINK ACTIVE ──
+    async function toggleLink(id, current) {
+      const res = await fetch(`/api/bio/links/${id}`, {
+        method: 'PATCH',
+        headers: { ...authHeader, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ is_active: !current })
+      });
+
+      if (res.ok) {
+        const updated = await res.json();
+        bioLinks = bioLinks.map(l => l.id === id ? updated : l);
+        renderLinks();
+        updatePreview();
+      }
+    }
+
+    // ── RENDER LINKS ──
+    function renderLinks() {
+      const list = document.getElementById('bio-links-list');
+      list.innerHTML = bioLinks.map(link => `
+        <div class="bio-link-item">
+          ${link.image_url
+            ? `<img src="${link.image_url}" class="bio-link-thumb" alt="">`
+            : `<div class="bio-link-thumb-placeholder">🔗</div>`}
+          <div class="bio-link-info">
+            <div class="bio-link-title">${link.title}</div>
+            <div class="bio-link-url">${link.url}</div>
+            <div class="bio-link-clicks">${link.clicks || 0} clicks</div>
+          </div>
+          <div class="bio-link-actions">
+            <button class="icon-btn" onclick="toggleLink(${link.id}, ${link.is_active})" title="${link.is_active ? 'Hide' : 'Show'}">
+              ${link.is_active ? '👁' : '🚫'}
+            </button>
+            <button class="icon-btn del" onclick="deleteLink(${link.id})" title="Delete">✕</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // ── UPDATE PREVIEW ──
+    function updatePreview() {
+      const accent = document.getElementById('accent-color').value;
+      const name = document.getElementById('display-name').value || 'Your Name';
+      const bio = document.getElementById('bio').value || 'Your bio will appear here...';
+      const username = document.getElementById('username').value;
+
+      document.getElementById('preview-name').textContent = name;
+      document.getElementById('preview-name').style.color = accent;
+      document.getElementById('preview-bio').textContent = bio;
+      document.getElementById('phone-preview').style.borderColor = accent;
+
+      // Socials
+      const socials = [
+        { id: 'instagram', icon: '📸', url: 'https://instagram.com/' },
+        { id: 'twitter', icon: '𝕏', url: 'https://twitter.com/' },
+        { id: 'tiktok', icon: '🎵', url: 'https://tiktok.com/@' },
+        { id: 'youtube', icon: '▶️', url: 'https://youtube.com/@' },
+        { id: 'facebook', icon: '📘', url: 'https://facebook.com/' },
+      ];
+
+      const socialsEl = document.getElementById('preview-socials');
+      socialsEl.innerHTML = socials
+        .filter(s => document.getElementById(s.id).value)
+        .map(s => `
+          <a href="${s.url}${document.getElementById(s.id).value}" class="preview-social-icon"
+             style="background:${accent}22; color:${accent};" target="_blank">
+            ${s.icon}
+          </a>
+        `).join('');
+
+      // Links
+      const previewLinks = document.getElementById('preview-links');
+      previewLinks.innerHTML = bioLinks.filter(l => l.is_active).map(l => `
+        <div class="preview-link" style="border-color:${accent}44;">
+          ${l.image_url
+            ? `<img src="${l.image_url}" class="preview-link-thumb" alt="">`
+            : `<div class="preview-link-thumb" style="background:${accent}22; display:flex; align-items:center; justify-content:center; font-size:16px;">🔗</div>`}
+          <span class="preview-link-title">${l.title}</span>
+          <span style="color:${accent}; font-size:10px;">→</span>
+        </div>
+      `).join('');
+    }
+
+    // ── COPY BIO URL ──
+    function copyBioUrl() {
+      const url = `https://${document.getElementById('bio-url-text').textContent}`;
+      navigator.clipboard.writeText(url);
+      showToast('Copied!', 'success');
+    }
+
+    // ── TOAST ──
+    function showToast(msg, type = '') {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.className = `toast ${type} show`;
+      setTimeout(() => t.className = 'toast', 3000);
+    }
+
+    // ── INIT ──
+    loadProfile();
+  </script>
+
+</body>
+</html>

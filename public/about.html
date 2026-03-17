@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About xlip.uk | Built by UnsyncSoftware</title>
+  <meta name="description" content="xlip.uk is a free URL shortener built by a solo developer from the Philippines under UnsyncSoftware. Fast, reliable, and built for everyone.">
+  <meta name="author" content="UnsyncSoftware">
+  <link rel="canonical" href="https://xlip.uk/about.html">
+  <meta property="og:title" content="About xlip.uk | Built by UnsyncSoftware">
+  <meta property="og:description" content="A free URL shortener built by a solo developer from the Philippines. Fast, reliable, and built for everyone.">
+  <meta property="og:url" content="https://xlip.uk/about.html">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://xlip.uk/images/og-image.png">
+  <meta property="og:site_name" content="xlip.uk">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="About xlip.uk">
+  <meta name="twitter:image" content="https://xlip.uk/images/og-image.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy:        #0e1628;
+      --navy-light:  #152035;
+      --navy-border: #1e2d47;
+      --lime:        #b8d900;
+      --lime-dark:   #9ab800;
+      --text:        #cdd8f0;
+      --text-dim:    #5a6a85;
+      --text-muted:  #3a4a65;
+    }
+
+    html, body {
+      min-height: 100%;
+      background: var(--navy);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── NAV ── */
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 24px 40px;
+      border-bottom: 1px solid var(--navy-border);
+    }
+
+    .logo {
+      font-family: 'Space Mono', monospace;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--lime);
+      text-decoration: none;
+      letter-spacing: -0.02em;
+    }
+
+    .logo span { color: var(--text); }
+
+    nav a.back {
+      font-size: 12px;
+      color: var(--text-dim);
+      text-decoration: none;
+      letter-spacing: 0.04em;
+      transition: color 0.2s;
+    }
+
+    nav a.back:hover { color: var(--text); }
+
+    /* ── CONTENT ── */
+    .page {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 72px 40px 80px;
+      animation: fadeUp 0.5s ease both;
+    }
+
+    .page-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      color: var(--lime);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    .page h1 {
+      font-family: 'Space Mono', monospace;
+      font-size: clamp(26px, 4vw, 40px);
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.15;
+      margin-bottom: 48px;
+    }
+
+    .page h1 em {
+      color: var(--lime);
+      font-style: normal;
+    }
+
+    .section {
+      margin-bottom: 48px;
+      padding-bottom: 48px;
+      border-bottom: 1px solid var(--navy-border);
+    }
+
+    .section:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .section-title {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      color: var(--text-muted);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    .section p {
+      font-size: 15px;
+      color: var(--text-dim);
+      line-height: 1.8;
+      font-weight: 300;
+      margin-bottom: 16px;
+    }
+
+    .section p:last-child { margin-bottom: 0; }
+
+    .section p strong {
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    /* ── STAT CARDS ── */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 1px;
+      margin-top: 32px;
+    }
+
+    .stat {
+      background: var(--navy-light);
+      border: 1px solid var(--navy-border);
+      padding: 24px;
+    }
+
+    .stat-value {
+      font-family: 'Space Mono', monospace;
+      font-size: 28px;
+      color: var(--lime);
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .stat-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    /* ── VALUES ── */
+    .values {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-top: 24px;
+    }
+
+    .value {
+      background: var(--navy-light);
+      border: 1px solid var(--navy-border);
+      padding: 20px;
+    }
+
+    .value-icon {
+      font-size: 20px;
+      margin-bottom: 8px;
+    }
+
+    .value-title {
+      font-family: 'Space Mono', monospace;
+      font-size: 12px;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    .value-desc {
+      font-size: 12px;
+      color: var(--text-dim);
+      line-height: 1.6;
+      font-weight: 300;
+    }
+
+    /* ── CTA ── */
+    .cta-row {
+      display: flex;
+      gap: 12px;
+      margin-top: 24px;
+      flex-wrap: wrap;
+    }
+
+    .btn-primary {
+      background: var(--lime);
+      color: var(--navy);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      padding: 12px 24px;
+      text-decoration: none;
+      transition: background 0.15s;
+      display: inline-block;
+    }
+
+    .btn-primary:hover { background: var(--lime-dark); }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--lime);
+      border: 1px solid var(--lime);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      padding: 12px 24px;
+      text-decoration: none;
+      transition: all 0.15s;
+      display: inline-block;
+    }
+
+    .btn-secondary:hover {
+      background: var(--lime);
+      color: var(--navy);
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      margin-top: auto;
+      padding: 24px 40px;
+      border-top: 1px solid var(--navy-border);
+      text-align: center;
+    }
+
+    .footer-tagline {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      color: var(--text-muted);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .footer-links a {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover { color: var(--text); }
+    .footer-links .sep { color: var(--text-muted); font-size: 11px; }
+
+    .footer-brand {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    .footer-brand a { color: var(--lime); text-decoration: none; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 600px) {
+      nav, .page { padding-left: 20px; padding-right: 20px; }
+      .page { padding-top: 48px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <a href="/" class="logo">xlip<span>.uk</span></a>
+    <a href="/" class="back">← back to home</a>
+  </nav>
+
+  <!-- CONTENT -->
+  <div class="page">
+
+    <div class="page-label">About xlip.uk</div>
+    <h1>Built by one person.<br>Used by <em>everyone</em>.</h1>
+
+    <!-- THE STORY -->
+    <div class="section">
+      <div class="section-title">The Story</div>
+      <p>xlip.uk started as a personal project — a simple tool to make long, ugly URLs shareable. What began as a weekend experiment quickly turned into something worth building properly.</p>
+      <p>It's built and maintained by a <strong>solo developer from the Philippines</strong>, under the indie software umbrella of <strong>UnsyncSoftware.com</strong>. No VC funding. No big team. Just one person who believes the internet deserves better tools — free, fast, and without the bloat.</p>
+      <p>xlip.uk is proof that you don't need a Silicon Valley team to build something useful. Sometimes all you need is a good idea, a cheap server, and too much free time.</p>
+    </div>
+
+    <!-- WHAT WE DO -->
+    <div class="section">
+      <div class="section-title">What We Do</div>
+      <p>xlip.uk is a <strong>free URL shortener</strong> that turns long, unwieldy links into short, clean ones. No account required to get started — paste your URL, get a short link, done.</p>
+      <p>For power users, we offer <strong>custom aliases</strong>, <strong>password-protected links</strong>, <strong>QR code generation</strong>, and <strong>click analytics</strong> — all available after a free account registration.</p>
+
+      <div class="stats">
+        <div class="stat">
+          <div class="stat-value">Free</div>
+          <div class="stat-label">Always, for guests</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value">5/hr</div>
+          <div class="stat-label">Guest link limit</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value">∞</div>
+          <div class="stat-label">Links for members</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value">Fast</div>
+          <div class="stat-label">301 redirects</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VALUES -->
+    <div class="section">
+      <div class="section-title">What We Stand For</div>
+      <p>We keep it simple. Three things matter to us:</p>
+
+      <div class="values">
+        <div class="value">
+          <div class="value-icon">⚡</div>
+          <div class="value-title">Speed</div>
+          <div class="value-desc">Links redirect instantly. No splash pages, no countdowns, no nonsense.</div>
+        </div>
+        <div class="value">
+          <div class="value-icon">🔒</div>
+          <div class="value-title">Privacy</div>
+          <div class="value-desc">We collect only what's needed. We don't sell your data. Ever.</div>
+        </div>
+        <div class="value">
+          <div class="value-icon">🌍</div>
+          <div class="value-title">Accessibility</div>
+          <div class="value-desc">Free for everyone. No paywalls on the core features that matter.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BUILT BY -->
+    <div class="section">
+      <div class="section-title">Built By</div>
+      <p>xlip.uk is a project by <strong><a href="https://unsyncsoftware.com" style="color:var(--lime);text-decoration:none;">UnsyncSoftware.com</a></strong> — an indie software label based in the Philippines, building small tools for everyday internet problems.</p>
+      <p>If xlip.uk saves you time or makes your work easier, consider supporting the project. It helps keep the servers running and new features coming.</p>
+
+      <div class="cta-row">
+        <a href="/donate.html" class="btn-primary">Support the Project</a>
+        <a href="/" class="btn-secondary">Start Shortening</a>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-tagline">fast &nbsp;—&nbsp; reliable &nbsp;—&nbsp; secure</div>
+    <div class="footer-brand"><a href="https://unsyncsoftware.com">UnsyncSoftware.com</a></div>
+    <div class="footer-links">
+      <a href="/about.html">about us</a><span class="sep">|</span>
+      <a href="/support.html">support</a><span class="sep">|</span>
+      <a href="/legal.html">legal</a><span class="sep">|</span>
+      <a href="/privacy.html">privacy</a><span class="sep">|</span>
+      <a href="/donate.html">donate</a>
+    </div>
+  </footer>
+
+</body>
+</html>

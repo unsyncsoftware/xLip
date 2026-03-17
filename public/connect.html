@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>xlip.uk — Connect Google Drive Add-on</title>
+  <meta name="description" content="Connect your xlip.uk account to the Google Drive add-on.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy: #0e1628;
+      --navy-light: #152035;
+      --navy-border: #1e2d47;
+      --lime: #b8d900;
+      --lime-dark: #9ab800;
+      --text: #cdd8f0;
+      --text-dim: #5a6a85;
+      --text-muted: #3a4a65;
+      --green: #4caf7d;
+      --red: #e05a5a;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--navy);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 400;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+
+    /* ── PROGRESS STEPS ── */
+    .steps {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      margin-bottom: 40px;
+    }
+
+    .step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .step-dot {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 1px solid var(--navy-border);
+      background: var(--navy-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      color: var(--text-muted);
+      transition: all 0.3s;
+    }
+
+    .step-dot.active {
+      border-color: var(--lime);
+      color: var(--lime);
+    }
+
+    .step-dot.done {
+      border-color: var(--green);
+      background: var(--green);
+      color: var(--navy);
+    }
+
+    .step-label {
+      font-size: 9px;
+      color: var(--text-muted);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .step-label.active { color: var(--lime); }
+    .step-label.done { color: var(--green); }
+
+    .step-line {
+      width: 48px;
+      height: 1px;
+      background: var(--navy-border);
+      margin: 0 4px;
+      margin-bottom: 22px;
+      transition: background 0.3s;
+    }
+
+    .step-line.done { background: var(--green); }
+
+    /* ── CARD ── */
+    .card {
+      width: 100%;
+      max-width: 460px;
+      border: 1px solid var(--navy-border);
+      background: var(--navy);
+      padding: 40px;
+      animation: fadeUp 0.4s ease both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .logo {
+      font-family: 'Space Mono', monospace;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--lime);
+      letter-spacing: -0.02em;
+      margin-bottom: 6px;
+      display: block;
+    }
+
+    .logo span { color: var(--text); }
+
+    .card-subtitle {
+      font-size: 12px;
+      color: var(--text-muted);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 32px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-subtitle::before {
+      content: '';
+      display: inline-block;
+      width: 16px;
+      height: 1px;
+      background: var(--navy-border);
+    }
+
+    .screen { display: none; }
+    .screen.active { display: block; }
+
+    h2 {
+      font-family: 'Space Mono', monospace;
+      font-size: 16px;
+      color: var(--text);
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+
+    p {
+      font-size: 13px;
+      color: var(--text-dim);
+      font-weight: 300;
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+
+    /* ── INPUTS ── */
+    input[type="email"],
+    input[type="password"],
+    input[type="text"] {
+      width: 100%;
+      background: var(--navy-light);
+      border: 1px solid var(--navy-border);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 300;
+      padding: 14px 16px;
+      outline: none;
+      transition: border-color 0.2s;
+      margin-bottom: 10px;
+      -webkit-appearance: none;
+    }
+
+    input::placeholder { color: var(--text-muted); }
+    input:focus { border-color: var(--lime); }
+
+    /* ── BUTTONS ── */
+    .btn {
+      width: 100%;
+      background: var(--lime);
+      color: var(--navy);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      font-weight: 500;
+      padding: 15px;
+      border: none;
+      cursor: pointer;
+      letter-spacing: 0.01em;
+      transition: background 0.15s;
+      margin-top: 4px;
+    }
+
+    .btn:hover { background: var(--lime-dark); }
+    .btn:disabled { background: var(--navy-border); color: var(--text-muted); cursor: not-allowed; }
+
+    .btn-ghost {
+      width: 100%;
+      background: transparent;
+      border: 1px solid var(--navy-border);
+      color: var(--text-muted);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      padding: 12px;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: all 0.15s;
+    }
+
+    .btn-ghost:hover { border-color: var(--text-dim); color: var(--text-dim); }
+
+    /* ── TOGGLE ── */
+    .toggle {
+      margin-top: 20px;
+      font-size: 12px;
+      color: var(--text-muted);
+      text-align: center;
+    }
+
+    .toggle button {
+      background: none;
+      border: none;
+      color: var(--lime);
+      cursor: pointer;
+      font-size: 12px;
+      font-family: 'DM Sans', sans-serif;
+      text-decoration: underline;
+    }
+
+    /* ── API KEY BOX ── */
+    .api-key-box {
+      background: var(--navy-light);
+      border: 1px solid var(--lime);
+      padding: 20px;
+      margin: 20px 0;
+      text-align: center;
+    }
+
+    .api-key-label {
+      font-size: 9px;
+      color: var(--text-muted);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+      display: block;
+    }
+
+    .api-key-value {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      color: var(--lime);
+      word-break: break-all;
+      line-height: 1.6;
+      display: block;
+      margin-bottom: 14px;
+      cursor: text;
+      user-select: all;
+    }
+
+    .copy-btn {
+      background: var(--lime);
+      color: var(--navy);
+      border: none;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      padding: 10px 28px;
+      cursor: pointer;
+      transition: background 0.15s;
+      width: 100%;
+    }
+
+    .copy-btn:hover { background: var(--lime-dark); }
+
+    /* ── SUCCESS MESSAGE ── */
+    .success-banner {
+      background: rgba(76, 175, 125, 0.1);
+      border: 1px solid rgba(76, 175, 125, 0.3);
+      padding: 16px;
+      margin-top: 20px;
+      font-size: 13px;
+      color: var(--green);
+      line-height: 1.6;
+      text-align: center;
+    }
+
+    .success-banner a {
+      color: var(--lime);
+      text-decoration: underline;
+    }
+
+    /* ── ERROR ── */
+    .error-msg {
+      font-size: 12px;
+      color: var(--red);
+      margin-top: -4px;
+      margin-bottom: 10px;
+      min-height: 18px;
+    }
+
+    /* ── VERIFY CODE ── */
+    #verify-code {
+      letter-spacing: 0.4em;
+      text-align: center;
+      font-size: 24px;
+      font-family: 'Space Mono', monospace;
+    }
+
+    /* ── FOOTER ── */
+    .page-footer {
+      margin-top: 32px;
+      font-size: 11px;
+      color: var(--text-muted);
+      text-align: center;
+    }
+
+    .page-footer a {
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .page-footer a:hover { color: var(--text); }
+
+    /* ── DRIVE BADGE ── */
+    .drive-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--navy-light);
+      border: 1px solid var(--navy-border);
+      padding: 6px 12px;
+      font-size: 11px;
+      color: var(--text-dim);
+      margin-bottom: 28px;
+    }
+
+    .drive-badge::before {
+      content: '⬡';
+      color: var(--lime);
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- PROGRESS STEPS -->
+  <div class="steps" id="steps">
+    <div class="step">
+      <div class="step-dot active" id="dot-1">1</div>
+      <span class="step-label active" id="label-1">account</span>
+    </div>
+    <div class="step-line" id="line-1"></div>
+    <div class="step">
+      <div class="step-dot" id="dot-2">2</div>
+      <span class="step-label" id="label-2">verify</span>
+    </div>
+    <div class="step-line" id="line-2"></div>
+    <div class="step">
+      <div class="step-dot" id="dot-3">3</div>
+      <span class="step-label" id="label-3">api key</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="logo">xlip<span>.uk</span></span>
+    <span class="card-subtitle">Google Drive Add-on Setup</span>
+    <div class="drive-badge">Connecting from Google Drive</div>
+
+    <!-- ── SCREEN 1: REGISTER / LOGIN ── -->
+    <div class="screen active" id="screen-auth">
+      <h2 id="auth-heading">Create your free account</h2>
+      <p id="auth-subtext">Get your API key instantly — takes less than 2 minutes. Already have an account? <button onclick="toggleMode()" style="background:none;border:none;color:var(--lime);cursor:pointer;font-size:13px;font-family:'DM Sans',sans-serif;text-decoration:underline;">Log in</button></p>
+
+      <input type="email" id="email" placeholder="your email address">
+      <input type="password" id="password" placeholder="choose a password" id="password">
+      <div class="error-msg" id="auth-error"></div>
+      <button class="btn" onclick="handleAuth()" id="auth-btn">Create Account & Get API Key</button>
+    </div>
+
+    <!-- ── SCREEN 2: VERIFY EMAIL ── -->
+    <div class="screen" id="screen-verify">
+      <h2>Check your email</h2>
+      <p>We sent a 6-digit code to <strong id="verify-email" style="color:var(--text)"></strong>. Enter it below to verify your account.</p>
+
+      <input type="text" id="verify-code" placeholder="000000" maxlength="6">
+      <div class="error-msg" id="verify-error"></div>
+      <button class="btn" onclick="verifyCode()">Verify Email</button>
+      <div class="toggle">
+        <span>Didn't get it?</span>
+        <button onclick="resendCode()">resend code</button>
+      </div>
+    </div>
+
+    <!-- ── SCREEN 3: API KEY ── -->
+    <div class="screen" id="screen-apikey">
+      <h2>✅ You're all set!</h2>
+      <p>Here is your xlip.uk API key. Copy it and paste it into the Google Drive add-on to connect your account.</p>
+
+      <div class="api-key-box">
+        <span class="api-key-label">Your API Key</span>
+        <span class="api-key-value" id="api-key-display">generating...</span>
+        <button class="copy-btn" onclick="copyKey()" id="copy-btn">📋 Copy API Key</button>
+      </div>
+
+      <div class="success-banner">
+        🎉 You're on a <strong>30-day free Pro trial</strong> — all features unlocked!<br><br>
+        Visit <a href="https://xlip.uk" target="_blank">xlip.uk</a> and log in with your email to access your full dashboard — track clicks, create bio pages, manage links and more. All free during your trial.
+      </div>
+    </div>
+
+  </div>
+
+  <div class="page-footer">
+    <a href="https://xlip.uk">xlip.uk</a> &nbsp;—&nbsp;
+    <a href="https://xlip.uk/privacy.html">privacy</a> &nbsp;—&nbsp;
+    <a href="https://xlip.uk/support.html">support</a>
+  </div>
+
+  <script>
+    let pendingEmail = '';
+    let pendingPassword = '';
+    let isLoginMode = false;
+
+    function toggleMode() {
+      isLoginMode = !isLoginMode;
+      document.getElementById('auth-heading').innerText = isLoginMode ? 'Welcome back' : 'Create your free account';
+      document.getElementById('auth-btn').innerText = isLoginMode ? 'Log In & Get API Key' : 'Create Account & Get API Key';
+      document.getElementById('auth-subtext').innerHTML = isLoginMode
+        ? `Don't have an account? <button onclick="toggleMode()" style="background:none;border:none;color:var(--lime);cursor:pointer;font-size:13px;font-family:'DM Sans',sans-serif;text-decoration:underline;">Register free</button>`
+        : `Already have an account? <button onclick="toggleMode()" style="background:none;border:none;color:var(--lime);cursor:pointer;font-size:13px;font-family:'DM Sans',sans-serif;text-decoration:underline;">Log in</button>`;
+      document.getElementById('auth-error').innerText = '';
+    }
+
+    function setStep(step) {
+      for (let i = 1; i <= 3; i++) {
+        const dot = document.getElementById(`dot-${i}`);
+        const label = document.getElementById(`label-${i}`);
+        if (i < step) {
+          dot.className = 'step-dot done';
+          dot.innerText = '✓';
+          label.className = 'step-label done';
+        } else if (i === step) {
+          dot.className = 'step-dot active';
+          dot.innerText = i;
+          label.className = 'step-label active';
+        } else {
+          dot.className = 'step-dot';
+          dot.innerText = i;
+          label.className = 'step-label';
+        }
+        if (i < 3) {
+          document.getElementById(`line-${i}`).className = i < step ? 'step-line done' : 'step-line';
+        }
+      }
+    }
+
+    function showScreen(id) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    }
+
+    async function handleAuth() {
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      const errorEl = document.getElementById('auth-error');
+      const btn = document.getElementById('auth-btn');
+
+      if (!email || !password) { errorEl.innerText = 'Please enter your email and password.'; return; }
+
+      btn.disabled = true;
+      btn.innerText = 'Please wait...';
+      errorEl.innerText = '';
+
+      if (isLoginMode) {
+        // ── LOGIN FLOW ──
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+
+        const data = await res.json();
+        btn.disabled = false;
+        btn.innerText = 'Log In & Get API Key';
+
+        if (res.ok) {
+          // Logged in — generate API key and show it
+          pendingEmail = email;
+          await generateAndShowKey(data.token);
+        } else if (res.status === 403 && data.unverified) {
+          pendingEmail = email;
+          pendingPassword = password;
+          document.getElementById('verify-email').innerText = email;
+          setStep(2);
+          showScreen('screen-verify');
+        } else {
+          errorEl.innerText = data.error || 'Login failed. Please try again.';
+        }
+
+      } else {
+        // ── REGISTER FLOW ──
+        const res = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+
+        const data = await res.json();
+        btn.disabled = false;
+        btn.innerText = 'Create Account & Get API Key';
+
+        if (res.ok) {
+          pendingEmail = email;
+          pendingPassword = password;
+          document.getElementById('verify-email').innerText = email;
+          setStep(2);
+          showScreen('screen-verify');
+        } else {
+          errorEl.innerText = data.error || 'Registration failed. Please try again.';
+        }
+      }
+    }
+
+    async function verifyCode() {
+      const code = document.getElementById('verify-code').value.trim();
+      const errorEl = document.getElementById('verify-error');
+
+      if (!code || code.length < 6) { errorEl.innerText = 'Please enter the 6-digit code.'; return; }
+      errorEl.innerText = '';
+
+      const res = await fetch('/api/auth/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: pendingEmail, code })
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        // Verified — now login to get token
+        const loginRes = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: pendingEmail, password: pendingPassword })
+        });
+
+        const loginData = await loginRes.json();
+
+        if (loginRes.ok) {
+          await generateAndShowKey(loginData.token);
+        } else {
+          errorEl.innerText = 'Verified! Please log in manually.';
+        }
+      } else {
+        errorEl.innerText = data.error || 'Invalid code. Please try again.';
+      }
+    }
+
+    async function resendCode() {
+      const res = await fetch('/api/auth/resend-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: pendingEmail })
+      });
+      const data = await res.json();
+      alert(res.ok ? '✅ New code sent! Check your email.' : data.error);
+    }
+
+    async function generateAndShowKey(token) {
+      // Generate API key
+      const res = await fetch('/api/v1/auth/generate-key', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.api_key) {
+        document.getElementById('api-key-display').innerText = data.api_key;
+        setStep(3);
+        showScreen('screen-apikey');
+      } else {
+        alert('Account ready! Please visit xlip.uk to get your API key from the dashboard.');
+        window.location.href = 'https://xlip.uk';
+      }
+    }
+
+    function copyKey() {
+      const key = document.getElementById('api-key-display').innerText;
+      navigator.clipboard.writeText(key).then(() => {
+        const btn = document.getElementById('copy-btn');
+        btn.innerText = '✅ Copied! Now paste it in Google Drive';
+        btn.style.background = 'var(--green)';
+        setTimeout(() => {
+          btn.innerText = '📋 Copy API Key';
+          btn.style.background = '';
+        }, 3000);
+      });
+    }
+  </script>
+</body>
+</html>

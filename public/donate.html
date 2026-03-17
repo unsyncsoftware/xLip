@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Support xlip.uk | Donate</title>
+  <meta name="description" content="Support xlip.uk and keep the service free. Choose from Clip It, Short & Sweet, or Link Lord tiers via Ko-fi or GCash.">
+  <meta name="author" content="UnsyncSoftware">
+  <link rel="canonical" href="https://xlip.uk/donate.html">
+  <meta property="og:title" content="Support xlip.uk | Donate">
+  <meta property="og:description" content="Keep xlip.uk free and running. Support us via Ko-fi or GCash.">
+  <meta property="og:url" content="https://xlip.uk/donate.html">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://xlip.uk/images/og-image.png">
+  <meta property="og:site_name" content="xlip.uk">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Support xlip.uk">
+  <meta name="twitter:image" content="https://xlip.uk/images/og-image.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy:        #0e1628;
+      --navy-light:  #152035;
+      --navy-border: #1e2d47;
+      --lime:        #b8d900;
+      --lime-dark:   #9ab800;
+      --text:        #cdd8f0;
+      --text-dim:    #5a6a85;
+      --text-muted:  #3a4a65;
+    }
+
+    html, body {
+      min-height: 100%;
+      background: var(--navy);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── NAV ── */
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 24px 40px;
+      border-bottom: 1px solid var(--navy-border);
+    }
+
+    .logo {
+      font-family: 'Space Mono', monospace;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--lime);
+      text-decoration: none;
+      letter-spacing: -0.02em;
+    }
+
+    .logo span { color: var(--text); }
+
+    nav a.back {
+      font-size: 12px;
+      color: var(--text-dim);
+      text-decoration: none;
+      letter-spacing: 0.04em;
+      transition: color 0.2s;
+    }
+
+    nav a.back:hover { color: var(--text); }
+
+    /* ── HERO ── */
+    .hero {
+      text-align: center;
+      padding: 72px 40px 48px;
+      animation: fadeUp 0.5s ease both;
+    }
+
+    .hero-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      color: var(--lime);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    .hero h1 {
+      font-family: 'Space Mono', monospace;
+      font-size: clamp(28px, 5vw, 48px);
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.1;
+      margin-bottom: 20px;
+    }
+
+    .hero h1 em {
+      color: var(--lime);
+      font-style: normal;
+    }
+
+    .hero p {
+      font-size: 15px;
+      color: var(--text-dim);
+      max-width: 480px;
+      margin: 0 auto;
+      line-height: 1.7;
+      font-weight: 300;
+    }
+
+    /* ── TIERS ── */
+    .tiers {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1px;
+      max-width: 900px;
+      margin: 0 auto 80px;
+      padding: 0 40px;
+      animation: fadeUp 0.5s ease 0.1s both;
+    }
+
+    .tier {
+      background: var(--navy-light);
+      border: 1px solid var(--navy-border);
+      padding: 36px 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      transition: border-color 0.2s, transform 0.2s;
+      position: relative;
+    }
+
+    .tier:hover {
+      border-color: var(--lime);
+      transform: translateY(-3px);
+    }
+
+    .tier.featured {
+      border-color: var(--lime);
+    }
+
+    .tier.featured::before {
+      content: 'POPULAR';
+      position: absolute;
+      top: -1px;
+      right: 20px;
+      background: var(--lime);
+      color: var(--navy);
+      font-family: 'Space Mono', monospace;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      padding: 3px 8px;
+    }
+
+    .tier-icon {
+      font-size: 28px;
+      line-height: 1;
+    }
+
+    .tier-name {
+      font-family: 'Space Mono', monospace;
+      font-size: 16px;
+      color: var(--text);
+      font-weight: 700;
+    }
+
+    .tier-price {
+      font-family: 'Space Mono', monospace;
+      font-size: 32px;
+      color: var(--lime);
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .tier-price span {
+      font-size: 14px;
+      color: var(--text-dim);
+      font-weight: 400;
+    }
+
+    .tier-vibe {
+      font-size: 13px;
+      color: var(--text-dim);
+      font-weight: 300;
+      line-height: 1.5;
+      flex: 1;
+    }
+
+    .tier-options {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-once, .btn-monthly {
+      flex: 1;
+      padding: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.03em;
+      cursor: pointer;
+      border: none;
+      transition: all 0.15s;
+      text-decoration: none;
+      text-align: center;
+      display: block;
+    }
+
+    .btn-once {
+      background: var(--lime);
+      color: var(--navy);
+    }
+
+    .btn-once:hover { background: var(--lime-dark); }
+
+    .btn-monthly {
+      background: transparent;
+      color: var(--lime);
+      border: 1px solid var(--lime);
+    }
+
+    .btn-monthly:hover {
+      background: var(--lime);
+      color: var(--navy);
+    }
+
+    /* ── DIVIDER ── */
+    .section-divider {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      max-width: 900px;
+      margin: 0 auto 48px;
+      padding: 0 40px;
+    }
+
+    .section-divider::before,
+    .section-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--navy-border);
+    }
+
+    .section-divider span {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      color: var(--text-muted);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    /* ── GCASH ── */
+    .gcash-section {
+      max-width: 480px;
+      margin: 0 auto 80px;
+      padding: 0 40px;
+      text-align: center;
+      animation: fadeUp 0.5s ease 0.2s both;
+    }
+
+    .gcash-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      color: var(--text-muted);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+    }
+
+    .gcash-card {
+      border: 1px solid var(--navy-border);
+      background: var(--navy-light);
+      padding: 32px;
+      display: inline-block;
+      width: 100%;
+    }
+
+    .gcash-qr {
+      width: 100%;
+      max-width: 300px;
+      height: auto;
+      margin: 0 auto 20px;
+      display: block;
+      border: 4px solid white;
+      cursor: zoom-in;
+      transition: transform 0.2s;
+    }
+
+    .gcash-qr:hover { transform: scale(1.03); }
+
+    .gcash-name {
+      font-family: 'Space Mono', monospace;
+      font-size: 14px;
+      color: var(--lime);
+      margin-bottom: 4px;
+    }
+
+    .gcash-detail {
+      font-size: 12px;
+      color: var(--text-dim);
+      margin-bottom: 2px;
+    }
+
+    .gcash-note {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 12px;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      margin-top: auto;
+      padding: 24px 40px;
+      border-top: 1px solid var(--navy-border);
+      text-align: center;
+    }
+
+    .footer-tagline {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      color: var(--text-muted);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .footer-links a {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover { color: var(--text); }
+    .footer-links .sep { color: var(--text-muted); font-size: 11px; }
+
+    .footer-brand {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    .footer-brand a { color: var(--lime); text-decoration: none; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 600px) {
+      nav, .hero, .tiers, .gcash-section, .section-divider { padding-left: 20px; padding-right: 20px; }
+      .hero { padding-top: 48px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <a href="/" class="logo">xlip<span>.uk</span></a>
+    <a href="/" class="back">← back to home</a>
+  </nav>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-label">Support xlip.uk</div>
+    <h1>Keep the links <em>short</em><br>and the servers <em>running</em></h1>
+    <p>xlip.uk is free for everyone. If it saves you time, consider buying us a coffee — or becoming a Link Lord. Every bit helps keep the lights on.</p>
+  </div>
+
+  <!-- TIERS -->
+  <div class="tiers">
+
+    <div class="tier">
+      <div class="tier-icon">☕</div>
+      <div class="tier-name">Clip It</div>
+      <div class="tier-price">$3 <span>/ support</span></div>
+      <div class="tier-vibe">Buy us a coffee. Seriously, we run on caffeine and shortened URLs.</div>
+      <div class="tier-options">
+        <a href="https://ko-fi.com/xlip_uk" target="_blank" class="btn-once">One-time</a>
+        <a href="https://ko-fi.com/xlip_uk/tiers" target="_blank" class="btn-monthly">Monthly</a>
+      </div>
+    </div>
+
+    <div class="tier featured">
+      <div class="tier-icon">⚡</div>
+      <div class="tier-name">Short & Sweet</div>
+      <div class="tier-price">$10 <span>/ support</span></div>
+      <div class="tier-vibe">Help keep the servers running fast and the uptime near 100%. We appreciate you.</div>
+      <div class="tier-options">
+        <a href="https://ko-fi.com/xlip_uk" target="_blank" class="btn-once">One-time</a>
+        <a href="https://ko-fi.com/xlip_uk/tiers" target="_blank" class="btn-monthly">Monthly</a>
+      </div>
+    </div>
+
+    <div class="tier">
+      <div class="tier-icon">🚀</div>
+      <div class="tier-name">Link Lord</div>
+      <div class="tier-price">$25 <span>/ support</span></div>
+      <div class="tier-vibe">Help us grow and ship new features faster. You're basically a co-founder at this point.</div>
+      <div class="tier-options">
+        <a href="https://ko-fi.com/xlip_uk" target="_blank" class="btn-once">One-time</a>
+        <a href="https://ko-fi.com/xlip_uk/tiers" target="_blank" class="btn-monthly">Monthly</a>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- DIVIDER -->
+  <div class="section-divider">
+    <span>local support — philippines</span>
+  </div>
+
+  <!-- GCASH -->
+  <div class="gcash-section">
+    <div class="gcash-label">Send via GCash / InstaPay</div>
+    <div class="gcash-card">
+      <a href="/images/gcash-qr.jpg" target="_blank">
+        <img src="/images/gcash-qr.jpg" alt="GCash QR Code" class="gcash-qr">
+      </a>
+      <div class="gcash-name">xlip_uk</div>
+      <div class="gcash-detail">DE***R B.</div>
+      <div class="gcash-detail">0917 763 ••••</div>
+      <div class="gcash-note">Scan with GCash or any InstaPay-supported app.<br>Transfer fees may apply.</div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-tagline">fast &nbsp;—&nbsp; reliable &nbsp;—&nbsp; secure</div>
+    <div class="footer-brand"><a href="https://unsyncsoftware.com">UnsyncSoftware.com</a></div>
+    <div class="footer-links">
+      <a href="#">about us</a><span class="sep">|</span>
+      <a href="#">support</a><span class="sep">|</span>
+      <a href="#">legal</a><span class="sep">|</span>
+      <a href="#">privacy</a><span class="sep">|</span>
+      <a href="donate.html">donate</a>
+    </div>
+  </footer>
+
+</body>
+</html>
