@@ -21,4 +21,5 @@ jobs:
 
       - name: Reload PM2
         run: |
-          pm2 reload xlip --update-env
+          pm2 reload xlip-app --update-env
+          pm2 reload xlip-admin --update-env
