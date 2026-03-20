@@ -1,3 +1,6 @@
+> **Status:** Alpha / Personal Project
+> **Notice:** Read our [Development Disclaimer & AI Philosophy](./DISCLAIMER.md) before use
+
 # xLip
 
 A link shortener SaaS with custom subdomains, bio profiles, click analytics, and PayPal payments. Self-hosted and production-ready.
