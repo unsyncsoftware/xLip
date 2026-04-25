@@ -22,6 +22,30 @@ router.post('/shorten', optionalAuth, guestShortenLimit, checkLimit, logVisit('l
 
   try { new URL(longUrl); } catch { return res.status(400).json({ error: 'Invalid URL' }); }
 
+  // Safe Browsing check
+  const sbRes = await fetch(`https://safebrowsing.googleapis.com/v4/threatMatches:find?key=${process.env.GOOGLE_SAFE_BROWSING_KEY}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      client: { clientId: 'xlip.uk', clientVersion: '1.0' },
+      threatInfo: {
+        threatTypes: ['MALWARE', 'SOCIAL_ENGINEERING', 'UNWANTED_SOFTWARE', 'POTENTIALLY_HARMFUL_APPLICATION'],
+        platformTypes: ['ANY_PLATFORM'],
+        threatEntryTypes: ['URL'],
+        threatEntries: [{ url: longUrl }]
+      }
+    })
+  });
+  const sbData = await sbRes.json();
+  if (sbData.matches && sbData.matches.length > 0) {
+    const ip = req.ip || req.headers['x-forwarded-for'] || 'unknown';
+    pool.query(
+      'INSERT INTO visitor_logs (ip_address, action, detail) VALUES ($1, $2, $3)',
+      [ip, 'url_blocked', longUrl]
+    ).catch(() => {});
+    return res.status(400).json({ error: 'URL flagged as unsafe' });
+  }
+
   try {
     if (customAlias) {
       const exists = await pool.query(

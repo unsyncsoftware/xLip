@@ -183,5 +183,3 @@ export async function runTrialExpiryJob() {
   }
 }
 
-// ── RUN IMMEDIATELY IF CALLED DIRECTLY ──
-runTrialExpiryJob();
