@@ -34,7 +34,7 @@
       --lime-dark: #9ab800;
       --text: #cdd8f0;
       --text-dim: #5a6a85;
-      --text-muted: #3a4a65;
+      --text-muted: #7a8fa8;
     }
 
     html, body {
@@ -76,7 +76,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 20px 40px;
+      padding: 20px 20px 0;
     }
 
     .card {
@@ -612,7 +612,9 @@
     .card { animation: fadeUp 0.4s ease both; }
     #dashboard-section { animation: fadeUp 0.4s ease both; }
 
-    #link-checker-section { max-width: 480px; margin: 0 auto 40px; padding: 0 20px; }
+    #link-checker-section { max-width: 520px; margin: -20px auto 40px; padding: 0 20px; }
+    #checkUrl { width: 100%; }
+    #link-checker-section .card { width: 100%; }
     .checker-label { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--lime); letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 8px; }
     .checker-sub { font-size: 13px; color: var(--text-dim); margin-bottom: 16px; font-weight: 300; }
     .checker-safe { color: #4caf50; font-size: 14px; font-weight: 500; margin-top: 16px; }
@@ -637,7 +639,7 @@
     <a id="nav-login" onclick="openAuth(true)">login</a>
   </nav>
 
-  <!-- MAIN CARD -->
+    <!-- MAIN CARD -->
   <main id="main-area">
     <div class="card">
       <span class="logo">xlip<span>.uk</span></span>
@@ -647,19 +649,16 @@
       </div>
       <button class="btn" onclick="shorten()">shorten link</button>
       <div id="result"></div>
-    </div>
-  </main>
 
-  <!-- LINK CHECKER -->
-  <section id="link-checker-section">
-    <div class="card">
+      <div style="border-top: 1px solid var(--navy-border); margin: 28px 0;"></div>
+
       <div class="checker-label">🛡️ link checker</div>
       <p class="checker-sub">paste any link — we'll tell you where it really goes</p>
       <input type="url" id="checkUrl" placeholder="paste any link to check...">
       <button class="btn" onclick="checkLink()">check link</button>
       <div id="checker-result"></div>
     </div>
-  </section>
+  </main>
 
   <!-- DASHBOARD -->
   <div id="dashboard-section">

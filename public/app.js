@@ -607,6 +607,8 @@ async function checkLink() {
       ? `<p class="checker-safe">✅ Safe — no threats detected</p>`
       : `<p class="checker-unsafe">🚨 Dangerous — ${data.threat.replace(/_/g, ' ').toLowerCase()}</p>`;
 
+    document.getElementById('checkUrl').value = '';
+
     resultDiv.innerHTML = `
       ${safetyBadge}
       <p class="checker-url">→ ${data.finalUrl}</p>
