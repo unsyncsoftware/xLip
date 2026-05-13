@@ -36,6 +36,11 @@ function toggleAuthMode() {
   isLoginMode = !isLoginMode;
   document.getElementById('auth-title').innerText = isLoginMode ? 'login' : 'register';
   document.getElementById('auth-toggle-text').innerText = isLoginMode ? "don't have an account?" : "already a member?";
+  document.getElementById('turnstile-widget').style.display = isLoginMode ? 'none' : 'block';
+  if (!isLoginMode && !window._turnstileRendered) {
+    turnstile.render('#turnstile-widget', { sitekey: '0x4AAAAAADDU52-5oY9pwrR1' });
+    window._turnstileRendered = true;
+  }
 }
 
 async function handleAuth() {
@@ -43,10 +48,16 @@ async function handleAuth() {
   const password = document.getElementById('auth-pass').value;
   const endpoint = isLoginMode ? '/api/auth/login' : '/api/auth/register';
 
+// Registration temporarily disabled
+  if (!isLoginMode) {
+    alert('Registration is temporarily unavailable. Check back soon.');
+    return;
+  }
+
   const res = await fetch(endpoint, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password })
+    body: JSON.stringify({ email, password, turnstileToken: isLoginMode ? null : turnstile.getResponse() })
   });
 
   const data = await res.json();
@@ -507,7 +518,7 @@ async function loadUsageCard() {
 
   card.innerHTML = `
     <div style="flex:1">
-      <span class="bio-card-label">monthly usage � ${data.plan} plan</span>
+      <span class="bio-card-label">monthly usage � ${data.plan} plan</span>
       <div style="display:flex; align-items:baseline; gap:6px; margin:6px 0 8px;">
         <span style="font-family:'Space Mono',monospace; font-size:22px; color:${barColor};">${data.used}</span>
         <span style="font-size:12px; color:var(--text-muted);">/ ${data.limit} links</span>
@@ -568,4 +579,40 @@ function copyApiKey() {
 function logout() {
   localStorage.removeItem('xlip_token');
   location.reload();
+}
+
+// ── LINK CHECKER ──
+async function checkLink() {
+  const url = document.getElementById('checkUrl').value.trim();
+  const resultDiv = document.getElementById('checker-result');
+
+  if (!url) return;
+
+  resultDiv.innerHTML = '<p style="color:var(--text-dim); font-size:13px;">checking...</p>';
+
+  try {
+    const res = await fetch('/api/v1/unshorten', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url })
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      resultDiv.innerHTML = `<p class="checker-unsafe">⚠️ ${data.error}</p>`;
+      return;
+    }
+
+    const safetyBadge = data.isSafe
+      ? `<p class="checker-safe">✅ Safe — no threats detected</p>`
+      : `<p class="checker-unsafe">🚨 Dangerous — ${data.threat.replace(/_/g, ' ').toLowerCase()}</p>`;
+
+    resultDiv.innerHTML = `
+      ${safetyBadge}
+      <p class="checker-url">→ ${data.finalUrl}</p>
+      <button class="checker-copy" onclick="navigator.clipboard.writeText('${data.finalUrl}').then(() => this.textContent = 'copied!').catch(() => {})">copy final url</button>
+    `;
+  } catch {
+    resultDiv.innerHTML = '<p class="checker-unsafe">⚠️ Network error. Please try again.</p>';
+  }
 }

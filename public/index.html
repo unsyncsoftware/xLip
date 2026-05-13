@@ -611,7 +611,19 @@
 
     .card { animation: fadeUp 0.4s ease both; }
     #dashboard-section { animation: fadeUp 0.4s ease both; }
+
+    #link-checker-section { max-width: 480px; margin: 0 auto 40px; padding: 0 20px; }
+    .checker-label { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--lime); letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 8px; }
+    .checker-sub { font-size: 13px; color: var(--text-dim); margin-bottom: 16px; font-weight: 300; }
+    .checker-safe { color: #4caf50; font-size: 14px; font-weight: 500; margin-top: 16px; }
+    .checker-unsafe { color: #e05a5a; font-size: 14px; font-weight: 500; margin-top: 16px; }
+    .checker-url { font-size: 12px; color: var(--text-dim); margin-top: 8px; word-break: break-all; }
+    .checker-copy { background: none; border: 1px solid var(--navy-border); color: var(--text-dim); font-size: 11px; padding: 4px 10px; cursor: pointer; margin-top: 8px; transition: all 0.2s; }
+    .checker-copy:hover { border-color: var(--lime); color: var(--lime); }
+
   </style>
+
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 </head>
 <script src="/visitor-tracker.js?v=2"></script>
 <body>
@@ -638,6 +650,17 @@
     </div>
   </main>
 
+  <!-- LINK CHECKER -->
+  <section id="link-checker-section">
+    <div class="card">
+      <div class="checker-label">🛡️ link checker</div>
+      <p class="checker-sub">paste any link — we'll tell you where it really goes</p>
+      <input type="url" id="checkUrl" placeholder="paste any link to check...">
+      <button class="btn" onclick="checkLink()">check link</button>
+      <div id="checker-result"></div>
+    </div>
+  </section>
+
   <!-- DASHBOARD -->
   <div id="dashboard-section">
     <div class="dash-header">
@@ -657,7 +680,7 @@
     <div class="bio-card" id="api-key-card" style="display:none; flex-direction:column; gap:12px;">
       <div style="display:flex; justify-content:space-between; align-items:center;">
         <div>
-          <span class="bio-card-label">google drive add-on � api key</span>
+          <span class="bio-card-label">google drive add-on � api key</span>
           <p style="font-size:13px; color:var(--text-dim); margin-top:4px; font-weight:300;">use this key to connect the xlip.uk Google Drive add-on</p>
         </div>
         <button class="logout-btn" onclick="toggleApiKeyCard()" style="margin-left:16px;">?</button>
@@ -732,6 +755,7 @@
         </div>
         <input type="email" id="auth-email" placeholder="email">
         <input type="password" id="auth-pass" placeholder="password">
+        <div id="turnstile-widget" style="margin:12px 0; display:none;"></div>
         <button class="btn" onclick="handleAuth()">ok</button>
         <div class="auth-toggle">
           <span id="auth-toggle-text">don't have an account?</span>

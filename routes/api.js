@@ -210,4 +210,72 @@ router.get('/ping', (req, res) => {
   res.json({ success: true, message: 'xlip.uk API is alive 🚀', version: 'v1' });
 });
 
+// POST /api/v1/unshorten
+router.post('/unshorten', async (req, res) => {
+  const { url } = req.body;
+  const ip = req.ip || req.headers['x-forwarded-for'] || 'unknown';
+
+  if (!url) return res.status(400).json({ error: 'URL is required.' });
+  try { new URL(url); } catch { return res.status(400).json({ error: 'Invalid URL.' }); }
+
+  // Rate limit — 5 checks per hour per IP for guests
+  try {
+    const recentChecks = await pool.query(
+      `SELECT COUNT(*) FROM visitor_logs 
+       WHERE action = 'link_checked' 
+       AND ip_address = $1 
+       AND created_at > NOW() - INTERVAL '24 hour'`,
+      [ip]
+    );
+    if (parseInt(recentChecks.rows[0].count) >= 5) {
+      return res.status(429).json({ error: 'Daily check limit reached. Sign up for more checks.' });
+    }
+  } catch (err) {
+    console.error('Rate limit check error:', err);
+  }
+
+  try {
+    // Follow redirects to get final URL
+    const response = await fetch(url, {
+      method: 'HEAD',
+      redirect: 'follow',
+      signal: AbortSignal.timeout(8000),
+      headers: { 'User-Agent': 'xlip.uk Link Checker/1.0' }
+    });
+    const finalUrl = response.url;
+
+    // Check against Google Safe Browsing
+    const sbRes = await fetch(`https://safebrowsing.googleapis.com/v4/threatMatches:find?key=${process.env.GOOGLE_SAFE_BROWSING_KEY}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        client: { clientId: 'xlip.uk', clientVersion: '1.0' },
+        threatInfo: {
+          threatTypes: ['MALWARE', 'SOCIAL_ENGINEERING', 'UNWANTED_SOFTWARE', 'POTENTIALLY_HARMFUL_APPLICATION'],
+          platformTypes: ['ANY_PLATFORM'],
+          threatEntryTypes: ['URL'],
+          threatEntries: [{ url: finalUrl }, { url: url }]
+        }
+      })
+    });
+    const sbData = await sbRes.json();
+    const isSafe = !sbData.matches || sbData.matches.length === 0;
+    const threat = isSafe ? null : sbData.matches[0].threatType;
+
+    // Log the check
+    pool.query(
+      'INSERT INTO visitor_logs (ip_address, action, detail) VALUES ($1, $2, $3)',
+      [ip, 'link_checked', url]
+    ).catch(() => {});
+
+    res.json({ success: true, originalUrl: url, finalUrl, isSafe, threat });
+  } catch (err) {
+    if (err.name === 'TimeoutError') {
+      return res.status(408).json({ error: 'Link took too long to respond.' });
+    }
+    console.error('Unshorten error:', err);
+    res.status(500).json({ error: 'Could not check this link.' });
+  }
+});
+
 export default router;

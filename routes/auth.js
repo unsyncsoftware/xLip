@@ -10,9 +10,32 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 const FROM_EMAIL = 'noreply@xlip.uk';
 const saltRounds = 10;
 
+// Turnstile verification
+async function verifyTurnstile(token, ip) {
+  const res = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      secret: process.env.TURNSTILE_SECRET_KEY,
+      response: token,
+      remoteip: ip
+    })
+  });
+  const data = await res.json();
+  return data.success;
+}
+
 // Register
 router.post('/register', async (req, res) => {
-  const { email, password } = req.body;
+  return res.status(503).json({ error: 'Registration is temporarily unavailable. Check back soon.' });
+  const { email, password, turnstileToken } = req.body;
+  const ip = req.ip || req.headers['x-forwarded-for'] || 'unknown';
+
+  // Verify Turnstile
+  if (!turnstileToken) return res.status(400).json({ error: 'Security check required.' });
+  const turnstileOk = await verifyTurnstile(turnstileToken, ip);
+  if (!turnstileOk) return res.status(400).json({ error: 'Security check failed. Please try again.' });
+
   try {
     const hash = await bcrypt.hash(password, saltRounds);
     const code = Math.floor(100000 + Math.random() * 900000).toString();
