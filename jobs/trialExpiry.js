@@ -97,7 +97,7 @@ async function sendTrialExpiredEmail(email) {
       <h2 style="color: #cdd8f0; margin-top: 32px;">Your Pro trial has ended</h2>
 
       <p style="color: #5a6a85; line-height: 1.6;">
-        Your 30-day Pro trial has ended and your account has moved to the free plan.
+        Your 15-day Pro trial has ended and your account has moved to the free plan.
         Your existing links are safe — you just have a 25 links/month limit going forward.
       </p>
 

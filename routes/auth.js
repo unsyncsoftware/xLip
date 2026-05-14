@@ -41,7 +41,7 @@ router.post('/register', async (req, res) => {
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     const expires = new Date(Date.now() + 15 * 60 * 1000);
 
-    const trialEndsAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
+    const trialEndsAt = new Date(Date.now() + 15 * 24 * 60 * 60 * 1000); // 15 days
 
     await pool.query(
       `INSERT INTO users (email, password_hash, verification_code, verification_expires_at, plan, trial_ends_at, trial_used)
