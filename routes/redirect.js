@@ -50,9 +50,24 @@ router.get('/:code', async (req, res) => {
           </body>`);
       }
     }
-
-    // Log the click
-    pool.query('INSERT INTO analytics (link_id, ip_address) VALUES ($1,$2)', [link.id, req.ip]).catch(() => {});
+    
+    // Log the click with geolocation
+    (async () => {
+      try {
+        const ip = req.ip === '::1' ? '1.1.1.1' : req.ip;
+        const geo = await fetch(`http://ip-api.com/json/${ip}?fields=country,city,status`);
+        const geoData = await geo.json();
+        const country = geoData.status === 'success' ? geoData.country : null;
+        const city = geoData.status === 'success' ? geoData.city : null;
+        pool.query(
+          'INSERT INTO analytics (link_id, ip_address, country, city) VALUES ($1,$2,$3,$4)',
+          [link.id, req.ip, country, city]
+        ).catch(() => {});
+      } catch {
+        pool.query('INSERT INTO analytics (link_id, ip_address) VALUES ($1,$2)', [link.id, req.ip]).catch(() => {});
+      }
+    })();
+        
     pool.query('INSERT INTO visitor_logs (ip_address, action, detail) VALUES ($1,$2,$3)',
       [req.ip, 'link_clicked', `/${code}`]).catch(() => {});
 
