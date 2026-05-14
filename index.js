@@ -46,6 +46,6 @@ app.use('/api/v1', apiRoutes);
 app.use(redirectRoute);
 // Run trial expiry check on startup
 runTrialExpiryJob();
-app.listen(3000, () => {
-  console.log('xlip.uk running on 3000');
+app.listen(process.env.PORT || 3000, () => {
+  console.log(`xlip.uk running on ${process.env.PORT || 3000}`);
 });
