@@ -17,7 +17,6 @@ import { runTrialExpiryJob } from './jobs/trialExpiry.js';
 import reportRoutes from './routes/report.js';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
-app.use('/api', reportRoutes);
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/webhooks', webhookRoutes);
@@ -25,6 +24,7 @@ app.use(cors({
   origin: ['https://xlip.uk', 'http://100.77.215.54:8888'],
   credentials: true
 }));
+app.use('/api', reportRoutes);
 app.set('trust proxy', 1);
 // ── LOG HOMEPAGE VISITS ──
 app.get('/', logVisit('page_view', 'homepage'), (req, res) => {
