@@ -54,7 +54,7 @@ router.get('/:code', async (req, res) => {
     // Log the click with geolocation
     (async () => {
       try {
-        const ip = req.ip === '::1' ? '1.1.1.1' : req.ip;
+        const ip = req.ip === '::1' ? '1.1.1.1' : req.ip.replace('::ffff:', '');
         const geo = await fetch(`http://ip-api.com/json/${ip}?fields=country,city,status`);
         const geoData = await geo.json();
         const country = geoData.status === 'success' ? geoData.country : null;

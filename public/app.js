@@ -1,6 +1,7 @@
 let isLoginMode = true;
 let pendingEmail = '';
 let usernameCheckTimer = null;
+let turnstileToken = null;
 const token = localStorage.getItem('xlip_token');
 
 window.onload = () => {
@@ -13,6 +14,17 @@ window.onload = () => {
     loadSubdomainCard();
     loadAdminDashboard();
     loadUsageCard();
+  }
+
+  // Render invisible Turnstile on page load
+  if (typeof turnstile !== 'undefined') {
+    turnstile.render('#turnstile-container', {
+      sitekey: '0x4AAAAAADDU52-5oY9pwrR1',
+      size: 'invisible',
+      callback: (token) => { turnstileToken = token; },
+      'expired-callback': () => { turnstileToken = null; },
+      'error-callback': () => { turnstileToken = null; }
+    });
   }
 };
 
@@ -36,45 +48,59 @@ function toggleAuthMode() {
   isLoginMode = !isLoginMode;
   document.getElementById('auth-title').innerText = isLoginMode ? 'login' : 'register';
   document.getElementById('auth-toggle-text').innerText = isLoginMode ? "don't have an account?" : "already a member?";
-  document.getElementById('turnstile-widget').style.display = isLoginMode ? 'none' : 'block';
-  if (!isLoginMode && !window._turnstileRendered) {
-    turnstile.render('#turnstile-widget', { sitekey: '0x4AAAAAADDU52-5oY9pwrR1' });
-    window._turnstileRendered = true;
-  }
 }
 
 async function handleAuth() {
-  const email = document.getElementById('auth-email').value;
+  const email = document.getElementById('auth-email').value.trim();
   const password = document.getElementById('auth-pass').value;
   const endpoint = isLoginMode ? '/api/auth/login' : '/api/auth/register';
 
-// Registration temporarily disabled
   if (!isLoginMode) {
-    alert('Registration is temporarily unavailable. Check back soon.');
-    return;
+    // Execute invisible Turnstile challenge
+    if (typeof turnstile !== 'undefined') {
+      turnstile.execute('#turnstile-container');
+      // Wait up to 5 seconds for token
+      let waited = 0;
+      while (!turnstileToken && waited < 5000) {
+        await new Promise(r => setTimeout(r, 200));
+        waited += 200;
+      }
+      if (!turnstileToken) {
+        alert('Security check failed. Please try again.');
+        return;
+      }
+    }
   }
 
   const res = await fetch(endpoint, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password, turnstileToken: isLoginMode ? null : turnstile.getResponse() })
+    body: JSON.stringify({ 
+      email, 
+      password, 
+      turnstileToken: isLoginMode ? null : turnstileToken 
+    })
   });
 
   const data = await res.json();
+
+  // Reset Turnstile after use
+  if (!isLoginMode && typeof turnstile !== 'undefined') {
+    turnstile.reset('#turnstile-container');
+    turnstileToken = null;
+  }
 
   if (res.ok) {
     if (isLoginMode) {
       localStorage.setItem('xlip_token', data.token);
       location.reload();
     } else {
-      // Registration successful — show verify screen
       pendingEmail = email;
       document.getElementById('verify-email-label').innerText = email;
       document.getElementById('auth-screen').style.display = 'none';
       document.getElementById('verify-screen').style.display = 'block';
     }
   } else if (res.status === 403 && data.unverified) {
-    // Unverified login — show verify screen
     pendingEmail = data.email;
     document.getElementById('verify-email-label').innerText = data.email;
     document.getElementById('auth-screen').style.display = 'none';
