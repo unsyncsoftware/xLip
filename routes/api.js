@@ -237,8 +237,12 @@ router.post('/unshorten', (req, res, next) => {
        AND created_at > NOW() - INTERVAL '24 hour'`,
       [ip]
     );
-    if (parseInt(recentChecks.rows[0].count) >= 5) {
-      return res.status(429).json({ error: 'Daily check limit reached. Sign up for more checks.' });
+    if (parseInt(recentChecks.rows[0].count) >= 20) {
+      return res.status(429).json({ 
+        error: 'Daily limit reached',
+        message: 'You\'ve used your 20 free checks today. Upgrade to Pro for unlimited checks.',
+        upgrade: true
+      });
     }
   } catch (err) {
     console.error('Rate limit check error:', err);

@@ -625,7 +625,16 @@ async function checkLink() {
     const data = await res.json();
 
     if (!res.ok) {
-      resultDiv.innerHTML = `<p class="checker-unsafe">⚠️ ${data.error}</p>`;
+      if (res.status === 429) {
+        resultDiv.innerHTML = `
+          <p class="checker-unsafe">⚠️ You've used your 20 free checks today.</p>
+          <p style="font-size:12px; color:var(--text-dim); margin-top:8px;">
+            Upgrade to <a href="/pricing.html" style="color:var(--lime);">Pro</a> for unlimited link checks.
+          </p>
+        `;
+      } else {
+        resultDiv.innerHTML = `<p class="checker-unsafe">⚠️ ${data.error}</p>`;
+      }
       return;
     }
 
