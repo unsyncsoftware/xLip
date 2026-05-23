@@ -211,7 +211,17 @@ router.get('/ping', (req, res) => {
 });
 
 // POST /api/v1/unshorten
-router.post('/unshorten', async (req, res) => {
+router.options('/unshorten', (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.sendStatus(204);
+});
+
+router.post('/unshorten', (req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  next();
+}, async (req, res) => {
   const { url } = req.body;
   const ip = req.ip || req.headers['x-forwarded-for'] || 'unknown';
 

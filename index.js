@@ -21,7 +21,15 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/webhooks', webhookRoutes);
 app.use(cors({
-  origin: ['https://xlip.uk', 'http://100.77.215.54:8888'],
+  origin: (origin, callback) => {
+    // Allow xlip.uk, Race Control, and Chrome extensions
+    const allowed = ['https://xlip.uk', 'http://100.77.215.54:8888'];
+    if (!origin || allowed.includes(origin) || origin.startsWith('chrome-extension://') || origin.startsWith('moz-extension://')) {
+      callback(null, true);
+    } else {
+      callback(null, false);
+    }
+  },
   credentials: true
 }));
 app.use('/api', reportRoutes);
