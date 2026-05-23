@@ -1,5 +1,7 @@
 import express from 'express';
 import { pool } from '../db.js';
+import { Resend } from 'resend';
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 const router = express.Router();
 
