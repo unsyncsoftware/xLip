@@ -10,37 +10,124 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 const FROM_EMAIL = 'noreply@xlip.uk';
 const saltRounds = 10;
 
+// Disposable email domains blocklist
+const DISPOSABLE_DOMAINS = [
+  'mailinator.com','guerrillamail.com','tempmail.com','throwaway.email',
+  'yopmail.com','sharklasers.com','guerrillamailblock.com','grr.la',
+  'guerrillamail.info','trashmail.com','trashmail.me','dispostable.com',
+  'maildrop.cc','spamgourmet.com','spamgourmet.net','mailnull.com',
+  'spamcorpse.com','spam4.me','spaml.de','trashmail.at','discard.email',
+  'fakeinbox.com','tempinbox.com','tempr.email','temp-mail.org',
+  'tempmail.net','getairmail.com','filzmail.com','throwam.com',
+  'spamherelots.com','binkmail.com','bobmail.info','chammy.info',
+  'devnullmail.com','dingbone.com','fudgerub.com','lookugly.com',
+  'mailbidon.com','maileater.com','mailexpire.com','mailfreeonline.com',
+  'mailguard.me','mailin8r.com','mailinator2.com','mailme.lv',
+  'mailnew.com','mailnull.com','mailsiphon.com','mailslite.com',
+  'mailzilla.com','mbx.cc','mega.zik.dj','meinspam.info','moncourrier.fr',
+  'monemail.fr','monmail.fr','msa.minsmail.com','mt2009.com','mt2014.com',
+  'mytrashmail.com','nospamfor.us','nospamthanks.info','notmailinator.com',
+  'nowmymail.com','ownmail.net','pecinan.com','pecinan.net','pecinan.org',
+  'pookmail.com','proxymail.eu','rcpt.at','rtrtr.com','s0ny.net',
+  'safe-mail.net','safetymail.info','safetypost.de','sandelf.de',
+  'shieldedmail.com','shhmail.com','shortmail.net','sibmail.com',
+  'skeefmail.com','slopsbox.com','smellfear.com','sofimail.com',
+  'solvemail.info','spambog.com','spambog.de','spambog.ru','spambox.info',
+  'spambox.irishspringrealty.com','spamcero.com','spamcon.org',
+  'spamevader.com','spamfree24.org','spamgoes.in','spamhereplease.com',
+  'spamhole.com','spamify.com','spaminator.de','spamkill.info','spaml.com',
+  'spammotel.com','spamoff.de','spamslicer.com','spamspot.com',
+  'spamthis.co.uk','spamthisplease.com','spamtrail.com','speed.1s.fr',
+  'supergreatmail.com','supermailer.jp','superrito.com','superstachel.de',
+  'suremail.info','teewars.org','teleworm.com','teleworm.us','tempalias.com',
+  'tempail.com','tempemail.biz','tempemail.co.za','tempemail.net',
+  'tempinbox.co.uk','tempinbox.com','tempmail2.com','tempmaildemo.com',
+  'tempmailer.com','tempmailer.de','tempomail.fr','temporarioemail.com.br',
+  'temporaryemail.net','temporaryforwarding.com','temporaryinbox.com',
+  'tempsky.com','tempthe.net','tempymail.com','thanksnospam.info',
+  'thisisnotmyrealemail.com','throam.com','throwam.com','throwaway.email',
+  'tilien.com','tittbit.in','tizi.com','tmailinator.com','toiea.com',
+  'tradermail.info','trash2009.com','trash2010.com','trash2011.com',
+  'trashdevil.com','trashdevil.de','trashemail.de','trashmail.at',
+  'trashmail.com','trashmail.io','trashmail.me','trashmail.net',
+  'trashmailer.com','trashmalware.com','trashspam.com','trashymail.com',
+  'trbvm.com','turual.com','twinmail.de','tyldd.com','uggsrock.com',
+  'umail.net','uroid.com','us.af','venompen.com','veryrealemail.com',
+  'viditag.com','vipmail.pw','viral.emailviral.com','vpn.st','vsimcard.com',
+  'vubby.com','walala.org','walkmail.net','walkmail.ru','wetrainbayarea.com',
+  'wetrainbayarea.org','wh4f.org','whyspam.me','willhackforfood.biz',
+  'willselfdestruct.com','wmail.cf','writeme.us','wronghead.com',
+  'wuzupmail.net','www.e4ward.com','www.mailinator.com','wwwnew.eu',
+  'xagloo.com','xemaps.com','xents.com','xmaily.com','xoxy.net',
+  'xyzfree.net','yapped.net','yeah.net','yep.it','yogamaven.com',
+  'yopmail.fr','yopmail.pp.ua','youmailr.com','ypmail.webarnak.fr.eu.org',
+  'yuurok.com','z1p.biz','za.com','zehnminuten.de','zehnminutenmail.de',
+  'zetmail.com','zippymail.info','zoaxe.com','zoemail.net','zoemail.org',
+  'zomg.info','zxcv.com','zxcvbnm.com','zzz.com'
+];
+
 // Turnstile verification
 async function verifyTurnstile(token, ip) {
-  const res = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      secret: process.env.TURNSTILE_SECRET_KEY,
-      response: token,
-      remoteip: ip
-    })
-  });
-  const data = await res.json();
-  return data.success;
+  try {
+    const res = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        secret: process.env.TURNSTILE_SECRET_KEY,
+        response: token,
+        remoteip: ip
+      })
+    });
+    const data = await res.json();
+    return data.success;
+  } catch { return false; }
 }
 
 // Register
 router.post('/register', async (req, res) => {
-  return res.status(503).json({ error: 'Registration is temporarily unavailable. Check back soon.' });
   const { email, password, turnstileToken } = req.body;
   const ip = req.ip || req.headers['x-forwarded-for'] || 'unknown';
 
-  // Verify Turnstile
+  // Basic validation
+  if (!email || !password) return res.status(400).json({ error: 'Email and password are required.' });
+
+  // Disposable email check
+  const domain = email.split('@')[1]?.toLowerCase();
+  if (!domain || DISPOSABLE_DOMAINS.includes(domain)) {
+    return res.status(400).json({ error: 'Disposable email addresses are not allowed.' });
+  }
+
+  // Turnstile verification
   if (!turnstileToken) return res.status(400).json({ error: 'Security check required.' });
   const turnstileOk = await verifyTurnstile(turnstileToken, ip);
   if (!turnstileOk) return res.status(400).json({ error: 'Security check failed. Please try again.' });
+
+  // IP rate limit — max 3 registrations per 24 hours
+  try {
+    const recentRegs = await pool.query(
+      `SELECT COUNT(*) FROM visitor_logs 
+       WHERE action = 'register_attempt' 
+       AND ip_address = $1 
+       AND created_at > NOW() - INTERVAL '24 hours'`,
+      [ip]
+    );
+    if (parseInt(recentRegs.rows[0].count) >= 3) {
+      return res.status(429).json({ error: 'Too many registration attempts. Try again tomorrow.' });
+    }
+  } catch (err) {
+    console.error('IP rate limit check error:', err);
+  }
+
+  // Log registration attempt
+  pool.query(
+    'INSERT INTO visitor_logs (ip_address, action, detail) VALUES ($1, $2, $3)',
+    [ip, 'register_attempt', email]
+  ).catch(() => {});
 
   try {
     const hash = await bcrypt.hash(password, saltRounds);
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     const expires = new Date(Date.now() + 15 * 60 * 1000);
-
     const trialEndsAt = new Date(Date.now() + 15 * 24 * 60 * 60 * 1000); // 15 days
 
     await pool.query(
