@@ -6,7 +6,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 const router = express.Router();
 
 router.post('/report', async (req, res) => {
-  const { shortCode, longUrl, linkId } = req.body;
+  const { shortCode, longUrl, linkId } = req.body || {};
   const ip = req.ip || req.headers['x-forwarded-for'] || 'unknown';
 
   try {
