@@ -14,6 +14,8 @@ import apiRoutes from './routes/api.js';
 import webhookRoutes from './routes/webhooks.js';
 import contactRoutes from './routes/contact.js';
 import { runTrialExpiryJob } from './jobs/trialExpiry.js';
+import reportRoutes from './routes/report.js';
+app.use('/api', reportRoutes);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 app.use(express.json());
