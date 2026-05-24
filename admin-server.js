@@ -5,13 +5,11 @@ import pg from 'pg';
 import bcrypt from 'bcrypt';
 import { exec } from 'child_process';
 import jwt from 'jsonwebtoken';
-import { Resend } from 'resend';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const { Pool } = pg;
 const JWT_SECRET = 'CHANGE_ME';
-const resend = new Resend(process.env.RESEND_API_KEY);
 
 const adminAuth = (req, res, next) => {
   const token = req.headers['authorization']?.split(' ')[1];
