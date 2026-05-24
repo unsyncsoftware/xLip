@@ -85,6 +85,12 @@ async function verifyTurnstile(token, ip) {
 
 // Register
 router.post('/register', async (req, res) => {
+  // Check if registration is enabled
+  const settingRes = await pool.query("SELECT value FROM settings WHERE key = 'registration_enabled'");
+  const regEnabled = settingRes.rows[0]?.value === 'true';
+  if (!regEnabled) {
+    return res.status(503).json({ error: 'Registration is temporarily unavailable. Check back soon.' });
+  }
   const { email, password, turnstileToken } = req.body;
   const ip = req.ip || req.headers['x-forwarded-for'] || 'unknown';
 

@@ -1,42 +1,83 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>XLIP | Race Control Login</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        body { background-color: #050505; color: white; font-family: 'Inter', sans-serif; }
-        .f1-red { color: #e10600; }
-        .input-box { background: #111; border: 1px solid #222; padding: 10px; width: 100%; margin-top: 10px; color: white; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>xlip.uk | Admin Panel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --navy: #0e1628; --navy-light: #152035; --navy-border: #1e2d47;
+      --lime: #b8d900; --lime-dark: #9ab800;
+      --text: #cdd8f0; --text-dim: #5a6a85; --text-muted: #7a8fa8;
+      --error: #e05a5a;
+    }
+    html, body { height: 100%; background: var(--navy); color: var(--text); font-family: 'DM Sans', sans-serif; }
+    body { display: flex; align-items: center; justify-content: center; }
+    .card {
+      width: 100%; max-width: 380px;
+      border: 1px solid var(--navy-border);
+      background: var(--navy-light);
+      padding: 40px;
+    }
+    .logo { font-family: 'Space Mono', monospace; font-size: 22px; font-weight: 700; color: var(--lime); margin-bottom: 4px; display: block; }
+    .logo span { color: var(--text); }
+    .logo small { font-size: 10px; color: var(--text-muted); letter-spacing: 0.15em; text-transform: uppercase; display: block; margin-top: 4px; }
+    .divider { height: 1px; background: var(--navy-border); margin: 24px 0; }
+    input {
+      width: 100%; background: var(--navy); border: 1px solid var(--navy-border);
+      color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 14px;
+      padding: 12px 14px; outline: none; transition: border-color 0.2s; margin-bottom: 10px;
+    }
+    input:focus { border-color: var(--lime); }
+    input::placeholder { color: var(--text-muted); }
+    .btn {
+      width: 100%; background: var(--lime); color: var(--navy);
+      font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500;
+      padding: 13px; border: none; cursor: pointer; transition: background 0.15s; margin-top: 4px;
+    }
+    .btn:hover { background: var(--lime-dark); }
+    .msg { font-size: 12px; color: var(--error); text-align: center; margin-top: 12px; min-height: 16px; }
+    .footer { font-size: 10px; color: var(--text-muted); text-align: center; margin-top: 24px; letter-spacing: 0.1em; text-transform: uppercase; }
+  </style>
 </head>
-<body class="flex items-center justify-center h-screen">
-    <div class="max-w-md w-full p-8 border-l-4 border-red-600 bg-zinc-900 shadow-2xl">
-        <h1 class="text-3xl font-black uppercase italic italic mb-6"><span class="f1-red">XLIP</span> LOGIN</h1>
-        <input type="email" id="email" placeholder="Admin Email" class="input-box">
-        <input type="password" id="password" placeholder="Key Phrase" class="input-box">
-        <button onclick="login()" class="w-full bg-red-600 font-bold py-3 mt-6 hover:bg-red-700 transition uppercase tracking-widest">Authorize Session</button>
-        <p id="msg" class="text-xs text-red-500 mt-4 text-center"></p>
-    </div>
-
-    <script>
-        async function login() {
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            // Pointing to your existing main API on Port 3000
-            const res = await fetch('/api/admin/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password })
-            });
-            const data = await res.json();
-            if (data.token) {
-                localStorage.setItem('xlip_token', data.token);
-                window.location.href = 'index.html';
-            } else {
-                document.getElementById('msg').innerText = "AUTHORIZATION FAILED";
-            }
+<body>
+  <div class="card">
+    <span class="logo">xlip<span>.uk</span><small>Admin Panel</small></span>
+    <div class="divider"></div>
+    <input type="email" id="email" placeholder="Admin email" autocomplete="email">
+    <input type="password" id="password" placeholder="Password" autocomplete="current-password">
+    <button class="btn" onclick="login()">Authorize →</button>
+    <p class="msg" id="msg"></p>
+    <div class="footer">Restricted Access — Authorized Personnel Only</div>
+  </div>
+  <script>
+    async function login() {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const msg = document.getElementById('msg');
+      msg.textContent = '';
+      try {
+        const res = await fetch('/api/admin/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+        if (data.token) {
+          localStorage.setItem('xlip_admin_token', data.token);
+          window.location.href = 'index.html';
+        } else {
+          msg.textContent = data.error || 'Authorization failed.';
         }
-    </script>
+      } catch {
+        msg.textContent = 'Connection error. Try again.';
+      }
+    }
+    document.addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
+  </script>
 </body>
 </html>

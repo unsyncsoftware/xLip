@@ -5,13 +5,14 @@ import pg from 'pg';
 import bcrypt from 'bcrypt';
 import { exec } from 'child_process';
 import jwt from 'jsonwebtoken';
+import { Resend } from 'resend';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const { Pool } = pg;
 const JWT_SECRET = 'CHANGE_ME';
+const resend = new Resend(process.env.RESEND_API_KEY);
 
-// ── AUTH MIDDLEWARE ──
 const adminAuth = (req, res, next) => {
   const token = req.headers['authorization']?.split(' ')[1];
   if (!token) return res.status(401).json({ error: 'No token' });
@@ -25,7 +26,6 @@ const adminAuth = (req, res, next) => {
   }
 };
 
-// ── DATABASE ──
 const pool = new Pool({
   connectionString: 'postgresql://xlip_admin:638hskjruwi758@127.0.0.1:5432/xlip_db',
   ssl: false
@@ -65,32 +65,30 @@ app.get('/api/admin/stats', adminAuth, async (req, res) => {
     const clickCount  = await pool.query('SELECT COUNT(*) FROM analytics');
     const bioCount    = await pool.query('SELECT COUNT(*) FROM bio_profiles');
     const subCount    = await pool.query('SELECT COUNT(*) FROM subdomains');
-    const todayClicks = await pool.query(
-      `SELECT COUNT(*) FROM analytics WHERE clicked_at >= NOW() - INTERVAL '24 hours'`
-    );
+    const todayClicks = await pool.query(`SELECT COUNT(*) FROM analytics WHERE clicked_at >= NOW() - INTERVAL '24 hours'`);
+    const abuseCount  = await pool.query(`SELECT COUNT(*) FROM abuse_reports WHERE status = 'pending'`);
 
     const linksRes = await pool.query(`
       SELECT l.id, u.email AS owner_email, l.custom_alias, l.short_code, l.long_url, l.domain_name, l.created_at,
         (SELECT COUNT(*) FROM analytics a WHERE a.link_id = l.id) AS clicks
       FROM links l
       LEFT JOIN users u ON l.user_id = u.id
-      ORDER BY l.id DESC
-      LIMIT 200
+      ORDER BY l.id DESC LIMIT 200
     `);
 
     res.json({
       stats: {
-        total_users:  userCount.rows[0].count,
-        total_links:  linkCount.rows[0].count,
-        total_clicks: clickCount.rows[0].count,
-        today_clicks: todayClicks.rows[0].count,
-        total_bios:   bioCount.rows[0].count,
-        total_subs:   subCount.rows[0].count,
+        total_users:   userCount.rows[0].count,
+        total_links:   linkCount.rows[0].count,
+        total_clicks:  clickCount.rows[0].count,
+        today_clicks:  todayClicks.rows[0].count,
+        total_bios:    bioCount.rows[0].count,
+        total_subs:    subCount.rows[0].count,
+        pending_abuse: abuseCount.rows[0].count,
       },
       links: linksRes.rows
     });
   } catch (err) {
-    console.error('Stats Error:', err.message);
     res.status(500).json({ error: 'Database error' });
   }
 });
@@ -99,8 +97,8 @@ app.get('/api/admin/stats', adminAuth, async (req, res) => {
 app.get('/api/admin/users', adminAuth, async (req, res) => {
   try {
     const result = await pool.query(`
-      SELECT
-        u.id, u.email, u.is_admin, u.is_verified, u.is_banned, u.created_at,
+      SELECT u.id, u.email, u.is_admin, u.is_verified, u.is_banned, u.plan,
+        u.trial_ends_at, u.created_at,
         bp.username AS bio_username,
         s.subdomain,
         COUNT(l.id) AS link_count
@@ -117,7 +115,88 @@ app.get('/api/admin/users', adminAuth, async (req, res) => {
   }
 });
 
-// ── BAN / UNBAN USER ──
+// ── CLIENT PROFILE ──
+app.get('/api/admin/client/:id', adminAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const user = await pool.query('SELECT * FROM users WHERE id = $1', [id]);
+    if (!user.rows.length) return res.status(404).json({ error: 'User not found' });
+
+    const links = await pool.query(`
+      SELECT l.*, COUNT(a.id) AS clicks
+      FROM links l
+      LEFT JOIN analytics a ON a.link_id = l.id
+      WHERE l.user_id = $1
+      GROUP BY l.id
+      ORDER BY l.created_at DESC
+    `, [id]);
+
+    const analytics = await pool.query(`
+      SELECT a.country, a.city, COUNT(*) AS clicks
+      FROM analytics a
+      JOIN links l ON a.link_id = l.id
+      WHERE l.user_id = $1 AND a.country IS NOT NULL
+      GROUP BY a.country, a.city
+      ORDER BY clicks DESC
+      LIMIT 20
+    `, [id]);
+
+    const bio = await pool.query('SELECT * FROM bio_profiles WHERE user_id = $1', [id]);
+
+    const abuse = await pool.query(`
+      SELECT ar.* FROM abuse_reports ar
+      JOIN links l ON ar.link_id = l.id
+      WHERE l.user_id = $1
+      ORDER BY ar.reported_at DESC
+    `, [id]);
+
+    const activity = await pool.query(`
+      SELECT * FROM visitor_logs
+      WHERE ip_address IN (
+        SELECT DISTINCT ip_address FROM analytics
+        JOIN links ON analytics.link_id = links.id
+        WHERE links.user_id = $1
+      )
+      ORDER BY created_at DESC LIMIT 50
+    `, [id]);
+
+    res.json({
+      user: user.rows[0],
+      links: links.rows,
+      analytics: analytics.rows,
+      bio: bio.rows[0] || null,
+      abuse: abuse.rows,
+      activity: activity.rows
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── DELETE CLIENT ──
+app.delete('/api/admin/client/:id', adminAuth, async (req, res) => {
+  try {
+    await pool.query('DELETE FROM users WHERE id = $1', [req.params.id]);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── CHANGE PLAN ──
+app.patch('/api/admin/client/:id/plan', adminAuth, async (req, res) => {
+  const { plan } = req.body;
+  if (!['free', 'pro', 'promax'].includes(plan)) return res.status(400).json({ error: 'Invalid plan' });
+  try {
+    await pool.query('UPDATE users SET plan = $1 WHERE id = $2', [plan, req.params.id]);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── BAN / UNBAN ──
 app.patch('/api/admin/users/:id/ban', adminAuth, async (req, res) => {
   const { banned } = req.body;
   try {
@@ -132,10 +211,8 @@ app.patch('/api/admin/users/:id/ban', adminAuth, async (req, res) => {
 app.get('/api/admin/bios', adminAuth, async (req, res) => {
   try {
     const result = await pool.query(`
-      SELECT
-        bp.id, bp.username, bp.display_name, bp.accent_color, bp.created_at,
-        u.email AS owner_email,
-        COUNT(bl.id) AS link_count
+      SELECT bp.id, bp.username, bp.display_name, bp.accent_color, bp.created_at,
+        u.email AS owner_email, COUNT(bl.id) AS link_count
       FROM bio_profiles bp
       JOIN users u ON bp.user_id = u.id
       LEFT JOIN bio_links bl ON bl.profile_id = bp.id
@@ -153,11 +230,77 @@ app.get('/api/admin/visitors', adminAuth, async (req, res) => {
   try {
     const result = await pool.query(`
       SELECT ip_address, action, detail, created_at
-      FROM visitor_logs
-      ORDER BY created_at DESC
-      LIMIT 500
+      FROM visitor_logs ORDER BY created_at DESC LIMIT 500
     `);
     res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── ABUSE REPORTS ──
+app.get('/api/admin/abuse-reports', adminAuth, async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT ar.*, u.email AS owner_email
+      FROM abuse_reports ar
+      LEFT JOIN links l ON ar.link_id = l.id
+      LEFT JOIN users u ON l.user_id = u.id
+      ORDER BY ar.reported_at DESC
+    `);
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── UPDATE ABUSE REPORT STATUS ──
+app.patch('/api/admin/abuse-reports/:id', adminAuth, async (req, res) => {
+  const { status } = req.body;
+  if (!['pending', 'reviewed', 'nuked'].includes(status)) return res.status(400).json({ error: 'Invalid status' });
+  try {
+    await pool.query('UPDATE abuse_reports SET status = $1 WHERE id = $2', [status, req.params.id]);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── BLOCKED URLS ──
+app.get('/api/admin/blocked-urls', adminAuth, async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT ip_address, detail AS url, created_at
+      FROM visitor_logs
+      WHERE action = 'url_blocked'
+      ORDER BY created_at DESC LIMIT 200
+    `);
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── SETTINGS ──
+app.get('/api/admin/settings', adminAuth, async (req, res) => {
+  try {
+    const result = await pool.query('SELECT key, value FROM settings');
+    const settings = {};
+    result.rows.forEach(r => settings[r.key] = r.value);
+    res.json(settings);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.patch('/api/admin/settings', adminAuth, async (req, res) => {
+  const { key, value } = req.body;
+  try {
+    await pool.query(`
+      INSERT INTO settings (key, value, updated_at) VALUES ($1, $2, NOW())
+      ON CONFLICT (key) DO UPDATE SET value = $2, updated_at = NOW()
+    `, [key, value]);
+    res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -218,5 +361,5 @@ app.delete('/api/admin/bios/:id', adminAuth, async (req, res) => {
 
 const PORT = 8888;
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Race Control active on port ${PORT}`);
+  console.log(`xlip Admin Panel active on port ${PORT}`);
 });
