@@ -23,8 +23,9 @@ export const upload = multer({
   limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
     const allowed = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
+    const allowedMime = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
     const ext = path.extname(file.originalname).toLowerCase();
-    if (allowed.includes(ext)) cb(null, true);
+    if (allowed.includes(ext) && allowedMime.includes(file.mimetype)) cb(null, true);
     else cb(new Error('Images only'));
   }
 });

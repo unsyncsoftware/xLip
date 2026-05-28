@@ -3,6 +3,13 @@ let pendingEmail = '';
 let usernameCheckTimer = null;
 let turnstileToken = null;
 const token = localStorage.getItem('xlip_token');
+const escapeHtml = (value = '') => String(value)
+  .replace(/&/g, '&amp;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;')
+  .replace(/'/g, '&#39;');
+const escapeAttr = escapeHtml;
 
 window.onload = () => {
   if (token) {
@@ -267,11 +274,15 @@ async function shorten() {
 
     const resDiv = document.getElementById('result');
     resDiv.innerHTML = `
-      <div class="result-box" onclick="navigator.clipboard.writeText('${data.shortUrl}'); this.querySelector('.result-hint').innerText = 'copied!'">
-        <span class="result-url">${data.shortUrl}</span>
+      <div class="result-box" id="shorten-result-box">
+        <span class="result-url">${escapeHtml(data.shortUrl)}</span>
         <span class="result-hint">click to copy your link</span>
       </div>
     `;
+    document.getElementById('shorten-result-box').addEventListener('click', (event) => {
+      navigator.clipboard.writeText(data.shortUrl);
+      event.currentTarget.querySelector('.result-hint').innerText = 'copied!';
+    });
 
     if (token) loadDashboard();
   } else {
@@ -296,7 +307,7 @@ async function loadBioCard() {
     bioCard.innerHTML = `
       <div class="bio-card-left">
         <span class="bio-card-label">your bio link</span>
-        <a href="/${data.username}" target="_blank" class="bio-card-url">xlip.uk/${data.username}</a>
+        <a href="/${encodeURIComponent(data.username)}" target="_blank" class="bio-card-url">xlip.uk/${escapeHtml(data.username)}</a>
       </div>
       <a href="/bio-edit.html" class="edit-bio-btn">edit bio</a>
     `;
@@ -331,7 +342,7 @@ async function loadSubdomainCard() {
     card.innerHTML = `
       <div class="bio-card-left">
         <span class="bio-card-label">your short link domain</span>
-        <a href="https://${data.subdomain}.xlip.uk" target="_blank" class="bio-card-url">${data.subdomain}.xlip.uk</a>
+        <a href="https://${encodeURIComponent(data.subdomain)}.xlip.uk" target="_blank" class="bio-card-url">${escapeHtml(data.subdomain)}.xlip.uk</a>
       </div>
       <button class="create-bio-btn" onclick="releaseSubdomain()" style="border-color:#e05a5a; color:#e05a5a;">release</button>
     `;
@@ -434,20 +445,20 @@ async function loadDashboard() {
   table.innerHTML = links.map(link => `
     <tr>
       <td>
-        <div class="td-short">xlip.uk/${link.custom_alias || link.short_code}</div>
-        <div class="td-long"><input type="text" id="edit-url-${link.id}" value="${link.long_url}"></div>
+        <div class="td-short">xlip.uk/${escapeHtml(link.custom_alias || link.short_code)}</div>
+        <div class="td-long"><input type="text" id="edit-url-${Number(link.id)}" value="${escapeAttr(link.long_url)}"></div>
       </td>
       <td class="td-pw">
-        <input type="password" id="edit-pw-${link.id}" placeholder="set password">
+        <input type="password" id="edit-pw-${Number(link.id)}" placeholder="set password">
       </td>
       <td style="text-align:center">
-        <span class="clicks-badge">${link.clicks}</span>
+        <span class="clicks-badge">${Number(link.clicks) || 0}</span>
       </td>
       <td>
         <div class="action-btns">
-          <button class="btn-save" onclick="updateLink(${link.id})">save</button>
-          <button class="btn-qr" onclick="showQR(${link.id})">qr</button>
-          <button class="btn-del" onclick="deleteLink(${link.id})">delete</button>
+          <button class="btn-save" onclick="updateLink(${Number(link.id)})">save</button>
+          <button class="btn-qr" onclick="showQR(${Number(link.id)})">qr</button>
+          <button class="btn-del" onclick="deleteLink(${Number(link.id)})">delete</button>
         </div>
       </td>
     </tr>
@@ -467,12 +478,12 @@ async function loadAdminDashboard() {
   const table = document.getElementById('admin-table-body');
   table.innerHTML = links.map(link => `
     <tr>
-      <td>${link.owner_email}</td>
-      <td class="td-short">xlip.uk/${link.short_code}</td>
-      <td style="text-align:center">${link.clicks}</td>
+      <td>${escapeHtml(link.owner_email)}</td>
+      <td class="td-short">xlip.uk/${escapeHtml(link.short_code)}</td>
+      <td style="text-align:center">${Number(link.clicks) || 0}</td>
       <td>
         <div class="action-btns">
-          <button class="btn-del" onclick="deleteLink(${link.id})">delete</button>
+          <button class="btn-del" onclick="deleteLink(${Number(link.id)})">delete</button>
         </div>
       </td>
     </tr>
@@ -633,22 +644,27 @@ async function checkLink() {
           </p>
         `;
       } else {
-        resultDiv.innerHTML = `<p class="checker-unsafe">⚠️ ${data.error}</p>`;
+        resultDiv.innerHTML = `<p class="checker-unsafe">⚠️ ${escapeHtml(data.error)}</p>`;
       }
       return;
     }
 
     const safetyBadge = data.isSafe
       ? `<p class="checker-safe">✅ Safe — no threats detected</p>`
-      : `<p class="checker-unsafe">🚨 Dangerous — ${data.threat.replace(/_/g, ' ').toLowerCase()}</p>`;
+      : `<p class="checker-unsafe">🚨 Dangerous — ${escapeHtml(data.threat.replace(/_/g, ' ').toLowerCase())}</p>`;
 
     document.getElementById('checkUrl').value = '';
 
     resultDiv.innerHTML = `
       ${safetyBadge}
-      <p class="checker-url">→ ${data.finalUrl}</p>
-      <button class="checker-copy" onclick="navigator.clipboard.writeText('${data.finalUrl}').then(() => this.textContent = 'copied!').catch(() => {})">copy final url</button>
+      <p class="checker-url">→ ${escapeHtml(data.finalUrl)}</p>
+      <button class="checker-copy" id="checker-copy-btn">copy final url</button>
     `;
+    document.getElementById('checker-copy-btn').addEventListener('click', (event) => {
+      navigator.clipboard.writeText(data.finalUrl).then(() => {
+        event.currentTarget.textContent = 'copied!';
+      }).catch(() => {});
+    });
   } catch {
     resultDiv.innerHTML = '<p class="checker-unsafe">⚠️ Network error. Please try again.</p>';
   }

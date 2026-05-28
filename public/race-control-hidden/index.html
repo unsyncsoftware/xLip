@@ -254,6 +254,12 @@
     const token = localStorage.getItem('xlip_admin_token') || localStorage.getItem('xlip_token');
     if (!token) window.location.href = 'login.html';
     const auth = { 'Authorization': `Bearer ${token}` };
+    const escapeHtml = (value = '') => String(value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
 
     function switchTab(name, el) {
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -291,12 +297,12 @@
       const tbody = document.getElementById('links-tbody');
       tbody.innerHTML = data.links.map(l => `
         <tr>
-          <td class="mono dim">${l.owner_email || '<i>guest</i>'}</td>
-          <td class="mono lime">/${l.custom_alias || l.short_code}</td>
-          <td class="truncate dim">${l.long_url}</td>
-          <td class="mono dim">${l.domain_name || '--'}</td>
-          <td style="text-align:center" class="mono">${l.clicks}</td>
-          <td style="text-align:right"><button class="action-btn btn-nuke" onclick="nukeLink(${l.id})">nuke</button></td>
+          <td class="mono dim">${l.owner_email ? escapeHtml(l.owner_email) : '<i>guest</i>'}</td>
+          <td class="mono lime">/${escapeHtml(l.custom_alias || l.short_code)}</td>
+          <td class="truncate dim">${escapeHtml(l.long_url)}</td>
+          <td class="mono dim">${escapeHtml(l.domain_name || '--')}</td>
+          <td style="text-align:center" class="mono">${Number(l.clicks) || 0}</td>
+          <td style="text-align:right"><button class="action-btn btn-nuke" onclick="nukeLink(${Number(l.id)})">nuke</button></td>
         </tr>
       `).join('');
       document.getElementById('links-count').textContent = `${data.links.length} links`;
@@ -307,15 +313,15 @@
       const users = await res.json();
       document.getElementById('users-tbody').innerHTML = users.map(u => `
         <tr>
-          <td class="mono">${u.email}</td>
+          <td class="mono">${escapeHtml(u.email)}</td>
           <td>${planBadge(u.plan)}</td>
-          <td class="mono lime">${u.bio_username ? `@${u.bio_username}` : '<span class="dim">—</span>'}</td>
-          <td style="text-align:center" class="mono">${u.link_count}</td>
+          <td class="mono lime">${u.bio_username ? `@${escapeHtml(u.bio_username)}` : '<span class="dim">—</span>'}</td>
+          <td style="text-align:center" class="mono">${Number(u.link_count) || 0}</td>
           <td>${u.is_banned ? '<span class="badge badge-red">banned</span>' : u.is_admin ? '<span class="badge badge-lime">admin</span>' : u.is_verified ? '<span class="badge badge-green">active</span>' : '<span class="badge badge-gray">unverified</span>'}</td>
           <td class="dim">${new Date(u.created_at).toLocaleDateString()}</td>
           <td style="text-align:right">
-            <button class="action-btn btn-view" onclick="viewProfile(${u.id})">profile</button>
-            ${u.is_banned ? `<button class="action-btn btn-unban" onclick="setBan(${u.id},false)">unban</button>` : u.is_admin ? '' : `<button class="action-btn btn-ban" onclick="setBan(${u.id},true)">ban</button>`}
+            <button class="action-btn btn-view" onclick="viewProfile(${Number(u.id)})">profile</button>
+            ${u.is_banned ? `<button class="action-btn btn-unban" onclick="setBan(${Number(u.id)},false)">unban</button>` : u.is_admin ? '' : `<button class="action-btn btn-ban" onclick="setBan(${Number(u.id)},true)">ban</button>`}
           </td>
         </tr>
       `).join('');
@@ -327,13 +333,13 @@
       const bios = await res.json();
       document.getElementById('bios-tbody').innerHTML = bios.map(b => `
         <tr>
-          <td class="mono lime"><a href="https://xlip.uk/${b.username}" target="_blank" style="color:var(--lime);text-decoration:none;">@${b.username}</a></td>
-          <td>${b.display_name || '<span class="dim">—</span>'}</td>
-          <td class="mono dim">${b.owner_email}</td>
-          <td style="text-align:center" class="mono">${b.link_count}</td>
-          <td><div style="width:14px;height:14px;background:${b.accent_color};border:1px solid var(--navy-border);display:inline-block;vertical-align:middle;margin-right:6px;"></div><span class="mono dim">${b.accent_color}</span></td>
+          <td class="mono lime"><a href="https://xlip.uk/${encodeURIComponent(b.username)}" target="_blank" style="color:var(--lime);text-decoration:none;">@${escapeHtml(b.username)}</a></td>
+          <td>${b.display_name ? escapeHtml(b.display_name) : '<span class="dim">—</span>'}</td>
+          <td class="mono dim">${escapeHtml(b.owner_email)}</td>
+          <td style="text-align:center" class="mono">${Number(b.link_count) || 0}</td>
+          <td><div style="width:14px;height:14px;background:${/^#[0-9a-fA-F]{6}$/.test(b.accent_color) ? b.accent_color : '#b8d900'};border:1px solid var(--navy-border);display:inline-block;vertical-align:middle;margin-right:6px;"></div><span class="mono dim">${escapeHtml(b.accent_color)}</span></td>
           <td class="dim">${new Date(b.created_at).toLocaleDateString()}</td>
-          <td style="text-align:right"><button class="action-btn btn-nuke" onclick="nukeBio(${b.id})">delete</button></td>
+          <td style="text-align:right"><button class="action-btn btn-nuke" onclick="nukeBio(${Number(b.id)})">delete</button></td>
         </tr>
       `).join('');
       document.getElementById('bios-count').textContent = `${bios.length} profiles`;
@@ -345,9 +351,9 @@
       const tagMap = { page_view: 'tag-page', link_clicked: 'tag-click', link_shortened: 'tag-shorten', url_blocked: 'tag-blocked', register_attempt: 'tag-report' };
       document.getElementById('visitors-tbody').innerHTML = logs.map(v => `
         <tr>
-          <td class="mono">${v.ip_address}</td>
-          <td><span class="action-tag ${tagMap[v.action] || 'tag-other'}">${v.action}</span></td>
-          <td class="mono dim truncate">${v.detail || '—'}</td>
+          <td class="mono">${escapeHtml(v.ip_address)}</td>
+          <td><span class="action-tag ${tagMap[v.action] || 'tag-other'}">${escapeHtml(v.action)}</span></td>
+          <td class="mono dim truncate">${v.detail ? escapeHtml(v.detail) : '—'}</td>
           <td class="dim">${new Date(v.created_at).toLocaleString()}</td>
         </tr>
       `).join('');
@@ -360,15 +366,15 @@
       const statusBadge = s => s === 'pending' ? '<span class="badge badge-warn">pending</span>' : s === 'reviewed' ? '<span class="badge badge-gray">reviewed</span>' : '<span class="badge badge-red">nuked</span>';
       document.getElementById('abuse-tbody').innerHTML = reports.map(r => `
         <tr>
-          <td class="mono lime">${r.short_code || '—'}</td>
-          <td class="truncate dim">${r.long_url || '—'}</td>
-          <td class="mono dim">${r.owner_email || '<i>guest</i>'}</td>
-          <td class="mono dim">${r.reporter_ip}</td>
+          <td class="mono lime">${r.short_code ? escapeHtml(r.short_code) : '—'}</td>
+          <td class="truncate dim">${r.long_url ? escapeHtml(r.long_url) : '—'}</td>
+          <td class="mono dim">${r.owner_email ? escapeHtml(r.owner_email) : '<i>guest</i>'}</td>
+          <td class="mono dim">${escapeHtml(r.reporter_ip)}</td>
           <td>${statusBadge(r.status)}</td>
           <td class="dim">${new Date(r.reported_at).toLocaleString()}</td>
           <td style="text-align:right">
-            <button class="action-btn btn-review" onclick="updateReport(${r.id},'reviewed')">review</button>
-            <button class="action-btn btn-nuke" onclick="updateReport(${r.id},'nuked')">nuke</button>
+            <button class="action-btn btn-review" onclick="updateReport(${Number(r.id)},'reviewed')">review</button>
+            <button class="action-btn btn-nuke" onclick="updateReport(${Number(r.id)},'nuked')">nuke</button>
           </td>
         </tr>
       `).join('');
@@ -380,8 +386,8 @@
       const urls = await res.json();
       document.getElementById('blocked-tbody').innerHTML = urls.map(u => `
         <tr>
-          <td class="mono">${u.ip_address}</td>
-          <td class="mono dim truncate">${u.url}</td>
+          <td class="mono">${escapeHtml(u.ip_address)}</td>
+          <td class="mono dim truncate">${escapeHtml(u.url)}</td>
           <td class="dim">${new Date(u.created_at).toLocaleString()}</td>
         </tr>
       `).join('');

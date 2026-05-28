@@ -3,14 +3,17 @@ import { pool } from '../db.js';
 import { authenticateToken } from '../middleware/jwt.js';
 import { upload } from '../middleware/upload.js';
 import { logVisit } from '../middleware/logger.js';
+import { validatePublicHttpUrl } from '../lib/security.js';
 
 const router = express.Router();
 
 const RESERVED = ['api', 'admin', 'bio', 'login', 'register', 'support', 'about', 'legal', 'privacy', 'donate', 'images', 'uploads'];
+const SOCIAL_HANDLE_RE = /^[a-zA-Z0-9_.@-]{0,100}$/;
 
 // Check username availability
 router.get('/check-username/:username', async (req, res) => {
   const { username } = req.params;
+  if (!/^[a-zA-Z0-9_-]{3,30}$/.test(username)) return res.json({ available: false, reason: 'invalid' });
   if (RESERVED.includes(username.toLowerCase())) return res.json({ available: false });
   const result = await pool.query('SELECT 1 FROM bio_profiles WHERE username = $1', [username]);
   res.json({ available: result.rows.length === 0 });
@@ -37,6 +40,12 @@ router.post('/profile', authenticateToken, async (req, res) => {
   if (!username) return res.status(400).json({ error: 'Username is required' });
   if (!/^[a-zA-Z0-9_-]{3,30}$/.test(username)) return res.status(400).json({ error: 'Invalid username format' });
   if (RESERVED.includes(username.toLowerCase())) return res.status(400).json({ error: 'That username is reserved' });
+  if (display_name && display_name.length > 60) return res.status(400).json({ error: 'Display name too long' });
+  if (bio && bio.length > 500) return res.status(400).json({ error: 'Bio too long' });
+  if (accent_color && !/^#[0-9a-fA-F]{6}$/.test(accent_color)) return res.status(400).json({ error: 'Invalid accent color' });
+  if ([instagram, twitter, tiktok, youtube, facebook].some(v => v && !SOCIAL_HANDLE_RE.test(v))) {
+    return res.status(400).json({ error: 'Invalid social handle' });
+  }
 
   try {
     const existing = await pool.query('SELECT * FROM bio_profiles WHERE user_id = $1', [req.user.userId]);
@@ -78,7 +87,9 @@ router.post('/avatar', authenticateToken, upload.single('avatar'), async (req, r
 router.post('/links', authenticateToken, upload.single('image'), async (req, res) => {
   const { title, url } = req.body;
   if (!title || !url) return res.status(400).json({ error: 'Title and URL are required' });
-  try { new URL(url); } catch { return res.status(400).json({ error: 'Invalid URL' }); }
+  if (title.length > 100) return res.status(400).json({ error: 'Title too long' });
+  const urlValidation = validatePublicHttpUrl(url);
+  if (!urlValidation.ok) return res.status(400).json({ error: urlValidation.error });
 
   try {
     const profile = await pool.query('SELECT id FROM bio_profiles WHERE user_id = $1', [req.user.userId]);
@@ -91,7 +102,7 @@ router.post('/links', authenticateToken, upload.single('image'), async (req, res
     );
     const result = await pool.query(
       `INSERT INTO bio_links (profile_id, title, url, image_url, display_order) VALUES ($1,$2,$3,$4,$5) RETURNING *`,
-      [profileId, title, url, imageUrl, orderResult.rows[0].next_order]
+      [profileId, title, urlValidation.url, imageUrl, orderResult.rows[0].next_order]
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
@@ -110,8 +121,17 @@ router.patch('/links/:id', authenticateToken, upload.single('image'), async (req
     if (check.rows.length === 0) return res.status(404).json({ error: 'Link not found' });
 
     let updates = [], values = [], idx = 1;
-    if (title) { updates.push(`title = $${idx++}`); values.push(title); }
-    if (url) { updates.push(`url = $${idx++}`); values.push(url); }
+    if (title) {
+      if (title.length > 100) return res.status(400).json({ error: 'Title too long' });
+      updates.push(`title = $${idx++}`);
+      values.push(title);
+    }
+    if (url) {
+      const urlValidation = validatePublicHttpUrl(url);
+      if (!urlValidation.ok) return res.status(400).json({ error: urlValidation.error });
+      updates.push(`url = $${idx++}`);
+      values.push(urlValidation.url);
+    }
     if (display_order !== undefined) { updates.push(`display_order = $${idx++}`); values.push(display_order); }
     if (is_active !== undefined) { updates.push(`is_active = $${idx++}`); values.push(is_active); }
     if (req.file) { updates.push(`image_url = $${idx++}`); values.push(`/uploads/bio-images/${req.file.filename}`); }
@@ -148,7 +168,9 @@ router.get('/click/:id', async (req, res) => {
       [req.params.id]
     );
     if (result.rows.length === 0) return res.status(404).send('Not found');
-    res.redirect(301, result.rows[0].url);
+    const destination = validatePublicHttpUrl(result.rows[0].url);
+    if (!destination.ok) return res.status(400).send('Unsafe destination');
+    res.redirect(302, destination.url);
   } catch (err) {
     res.status(500).send('Error');
   }

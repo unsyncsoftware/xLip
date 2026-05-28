@@ -1,14 +1,24 @@
 import express from 'express';
 import bcrypt from 'bcrypt';
+import crypto from 'node:crypto';
 import jwt from 'jsonwebtoken';
+import { rateLimit } from 'express-rate-limit';
 import { Resend } from 'resend';
 import { pool } from '../db.js';
+import { requireSecret } from '../lib/security.js';
 
 const router = express.Router();
-const JWT_SECRET = process.env.JWT_SECRET || 'CHANGE_ME';
+const JWT_SECRET = requireSecret('JWT_SECRET');
 const resend = new Resend(process.env.RESEND_API_KEY);
 const FROM_EMAIL = 'noreply@xlip.uk';
 const saltRounds = 10;
+const authRateLimit = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many attempts. Try again later.' }
+});
 
 // Disposable email domains blocklist
 const DISPOSABLE_DOMAINS = [
@@ -84,7 +94,7 @@ async function verifyTurnstile(token, ip) {
 }
 
 // Register
-router.post('/register', async (req, res) => {
+router.post('/register', authRateLimit, async (req, res) => {
   // Check if registration is enabled
   const settingRes = await pool.query("SELECT value FROM settings WHERE key = 'registration_enabled'");
   const regEnabled = settingRes.rows[0]?.value === 'true';
@@ -132,7 +142,7 @@ router.post('/register', async (req, res) => {
 
   try {
     const hash = await bcrypt.hash(password, saltRounds);
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    const code = crypto.randomInt(100000, 1000000).toString();
     const expires = new Date(Date.now() + 15 * 60 * 1000);
     const trialEndsAt = new Date(Date.now() + 15 * 24 * 60 * 60 * 1000); // 15 days
 
@@ -168,7 +178,7 @@ router.post('/register', async (req, res) => {
 });
 
 // Verify
-router.post('/verify', async (req, res) => {
+router.post('/verify', authRateLimit, async (req, res) => {
   const { email, code } = req.body;
   try {
     const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
@@ -192,14 +202,14 @@ router.post('/verify', async (req, res) => {
 });
 
 // Resend code
-router.post('/resend-code', async (req, res) => {
+router.post('/resend-code', authRateLimit, async (req, res) => {
   const { email } = req.body;
   try {
     const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
     if (result.rows.length === 0) return res.status(404).json({ error: 'User not found' });
     if (result.rows[0].is_verified) return res.status(400).json({ error: 'Already verified' });
 
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    const code = crypto.randomInt(100000, 1000000).toString();
     const expires = new Date(Date.now() + 15 * 60 * 1000);
 
     await pool.query(
@@ -232,7 +242,7 @@ router.post('/resend-code', async (req, res) => {
 });
 
 // Login
-router.post('/login', async (req, res) => {
+router.post('/login', authRateLimit, async (req, res) => {
   const { email, password } = req.body;
   try {
     const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);

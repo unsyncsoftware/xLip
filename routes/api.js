@@ -9,22 +9,63 @@ import crypto from 'crypto';
 import { pool } from '../db.js';
 import { authenticateToken } from '../middleware/jwt.js';
 import { incrementLinkCount } from '../middleware/checkLimit.js';
+import {
+  hashApiKey,
+  isAllowedHost,
+  normalizeHost,
+  validateAlias,
+  validateFetchablePublicUrl,
+  validatePublicHttpUrl
+} from '../lib/security.js';
 
 const router = express.Router();
+
+async function fetchFinalPublicUrl(url, hops = 5) {
+  let current = url;
+  for (let i = 0; i <= hops; i++) {
+    const response = await fetch(current, {
+      method: 'HEAD',
+      redirect: 'manual',
+      signal: AbortSignal.timeout(8000),
+      headers: { 'User-Agent': 'xlip.uk Link Checker/1.0' }
+    });
+
+    if (response.status >= 300 && response.status < 400 && response.headers.get('location')) {
+      if (i === hops) throw new Error('Too many redirects');
+      const nextUrl = new URL(response.headers.get('location'), current).toString();
+      const nextValidation = await validateFetchablePublicUrl(nextUrl);
+      if (!nextValidation.ok) {
+        const error = new Error(nextValidation.error);
+        error.statusCode = 400;
+        throw error;
+      }
+      current = nextValidation.url;
+      continue;
+    }
+
+    return current;
+  }
+  return current;
+}
 
 async function requireApiKey(req, res, next) {
   const apiKey = req.headers['x-api-key'];
   if (!apiKey) return res.status(401).json({ error: 'Missing API key. Include x-api-key in your request headers.' });
 
   try {
+    const apiKeyHash = hashApiKey(apiKey);
     const result = await pool.query(
-      'SELECT id, email, is_banned, plan, monthly_link_count, link_count_reset_at FROM users WHERE api_key = $1',
-      [apiKey]
+      'SELECT id, email, is_banned, plan, monthly_link_count, link_count_reset_at, api_key FROM users WHERE api_key = $1 OR api_key = $2',
+      [apiKeyHash, apiKey]
     );
     if (result.rows.length === 0) return res.status(401).json({ error: 'Invalid API key.' });
 
     const user = result.rows[0];
     if (user.is_banned) return res.status(403).json({ error: 'Your account has been banned.' });
+    if (user.api_key === apiKey) {
+      await pool.query('UPDATE users SET api_key = $1 WHERE id = $2', [apiKeyHash, user.id]);
+    }
+    delete user.api_key;
 
     req.apiUser = user;
     next();
@@ -71,7 +112,7 @@ async function checkApiLimit(req, res, next) {
 router.post('/auth/generate-key', authenticateToken, async (req, res) => {
   try {
     const apiKey = 'xlip_' + crypto.randomBytes(32).toString('hex');
-    await pool.query('UPDATE users SET api_key = $1 WHERE id = $2', [apiKey, req.user.userId]);
+    await pool.query('UPDATE users SET api_key = $1 WHERE id = $2', [hashApiKey(apiKey), req.user.userId]);
     res.json({ success: true, api_key: apiKey, message: 'Store this key safely. Regenerating it will invalidate the old one.' });
   } catch (err) {
     console.error('Generate key error:', err);
@@ -82,16 +123,40 @@ router.post('/auth/generate-key', authenticateToken, async (req, res) => {
 // POST /api/v1/shorten
 router.post('/shorten', requireApiKey, checkApiLimit, async (req, res) => {
   const { url, customAlias } = req.body;
-  const domainName = req.get('host');
+  if (!isAllowedHost(req.get('host'))) return res.status(400).json({ error: 'Invalid host' });
+  const domainName = normalizeHost(req.get('host'));
 
   if (!url) return res.status(400).json({ error: 'url is required.' });
-  try { new URL(url); } catch { return res.status(400).json({ error: 'Invalid URL format.' }); }
+  const urlValidation = validatePublicHttpUrl(url);
+  if (!urlValidation.ok) return res.status(400).json({ error: urlValidation.error });
+  const aliasValidation = validateAlias(customAlias);
+  if (!aliasValidation.ok) return res.status(400).json({ error: aliasValidation.error });
 
   try {
-    if (customAlias) {
+    if (process.env.GOOGLE_SAFE_BROWSING_KEY) {
+      const sbRes = await fetch(`https://safebrowsing.googleapis.com/v4/threatMatches:find?key=${process.env.GOOGLE_SAFE_BROWSING_KEY}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          client: { clientId: 'xlip.uk', clientVersion: '1.0' },
+          threatInfo: {
+            threatTypes: ['MALWARE', 'SOCIAL_ENGINEERING', 'UNWANTED_SOFTWARE', 'POTENTIALLY_HARMFUL_APPLICATION'],
+            platformTypes: ['ANY_PLATFORM'],
+            threatEntryTypes: ['URL'],
+            threatEntries: [{ url: urlValidation.url }]
+          }
+        })
+      });
+      const sbData = await sbRes.json();
+      if (sbData.matches && sbData.matches.length > 0) {
+        return res.status(400).json({ error: 'URL flagged as unsafe' });
+      }
+    }
+
+    if (aliasValidation.value) {
       const exists = await pool.query(
         'SELECT 1 FROM links WHERE custom_alias = $1 AND domain_name = $2',
-        [customAlias, domainName]
+        [aliasValidation.value, domainName]
       );
       if (exists.rows.length) return res.status(409).json({ error: 'Alias already taken. Try another.' });
     }
@@ -99,18 +164,18 @@ router.post('/shorten', requireApiKey, checkApiLimit, async (req, res) => {
     const shortCode = nanoid(6);
     await pool.query(
       `INSERT INTO links (long_url, short_code, custom_alias, user_id, domain_name) VALUES ($1, $2, $3, $4, $5)`,
-      [url, shortCode, customAlias || null, req.apiUser.id, domainName]
+      [urlValidation.url, shortCode, aliasValidation.value, req.apiUser.id, domainName]
     );
 
     await incrementLinkCount(req.apiUser.id);
-    const slug = customAlias || shortCode;
+    const slug = aliasValidation.value || shortCode;
 
     res.status(201).json({
       success: true,
       short_url: `https://${domainName}/${slug}`,
       short_code: shortCode,
-      custom_alias: customAlias || null,
-      original_url: url,
+      custom_alias: aliasValidation.value,
+      original_url: urlValidation.url,
       usage: {
         used: req.limitInfo.used + 1,
         limit: req.limitInfo.limit,
@@ -226,7 +291,8 @@ router.post('/unshorten', (req, res, next) => {
   const ip = req.ip || req.headers['x-forwarded-for'] || 'unknown';
 
   if (!url) return res.status(400).json({ error: 'URL is required.' });
-  try { new URL(url); } catch { return res.status(400).json({ error: 'Invalid URL.' }); }
+  const urlValidation = await validateFetchablePublicUrl(url);
+  if (!urlValidation.ok) return res.status(400).json({ error: urlValidation.error });
 
   // Rate limit — 5 checks per hour per IP for guests
   try {
@@ -250,40 +316,40 @@ router.post('/unshorten', (req, res, next) => {
 
   try {
     // Follow redirects to get final URL
-    const response = await fetch(url, {
-      method: 'HEAD',
-      redirect: 'follow',
-      signal: AbortSignal.timeout(8000),
-      headers: { 'User-Agent': 'xlip.uk Link Checker/1.0' }
-    });
-    const finalUrl = response.url;
+    const finalUrl = await fetchFinalPublicUrl(urlValidation.url);
 
-    // Check against Google Safe Browsing
-    const sbRes = await fetch(`https://safebrowsing.googleapis.com/v4/threatMatches:find?key=${process.env.GOOGLE_SAFE_BROWSING_KEY}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        client: { clientId: 'xlip.uk', clientVersion: '1.0' },
-        threatInfo: {
-          threatTypes: ['MALWARE', 'SOCIAL_ENGINEERING', 'UNWANTED_SOFTWARE', 'POTENTIALLY_HARMFUL_APPLICATION'],
-          platformTypes: ['ANY_PLATFORM'],
-          threatEntryTypes: ['URL'],
-          threatEntries: [{ url: finalUrl }, { url: url }]
-        }
-      })
-    });
-    const sbData = await sbRes.json();
-    const isSafe = !sbData.matches || sbData.matches.length === 0;
-    const threat = isSafe ? null : sbData.matches[0].threatType;
+    let isSafe = true;
+    let threat = null;
+    if (process.env.GOOGLE_SAFE_BROWSING_KEY) {
+      const sbRes = await fetch(`https://safebrowsing.googleapis.com/v4/threatMatches:find?key=${process.env.GOOGLE_SAFE_BROWSING_KEY}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          client: { clientId: 'xlip.uk', clientVersion: '1.0' },
+          threatInfo: {
+            threatTypes: ['MALWARE', 'SOCIAL_ENGINEERING', 'UNWANTED_SOFTWARE', 'POTENTIALLY_HARMFUL_APPLICATION'],
+            platformTypes: ['ANY_PLATFORM'],
+            threatEntryTypes: ['URL'],
+            threatEntries: [{ url: finalUrl }, { url: urlValidation.url }]
+          }
+        })
+      });
+      const sbData = await sbRes.json();
+      isSafe = !sbData.matches || sbData.matches.length === 0;
+      threat = isSafe ? null : sbData.matches[0].threatType;
+    }
 
     // Log the check
     pool.query(
       'INSERT INTO visitor_logs (ip_address, action, detail) VALUES ($1, $2, $3)',
-      [ip, 'link_checked', url]
+      [ip, 'link_checked', urlValidation.parsed.hostname]
     ).catch(() => {});
 
-    res.json({ success: true, originalUrl: url, finalUrl, isSafe, threat });
+    res.json({ success: true, originalUrl: urlValidation.url, finalUrl, isSafe, threat });
   } catch (err) {
+    if (err.statusCode === 400) {
+      return res.status(400).json({ error: err.message });
+    }
     if (err.name === 'TimeoutError') {
       return res.status(408).json({ error: 'Link took too long to respond.' });
     }

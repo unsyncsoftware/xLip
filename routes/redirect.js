@@ -3,13 +3,14 @@ import bcrypt from 'bcrypt';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { pool } from '../db.js';
+import { escapeHtml, normalizeHost, validatePublicHttpUrl } from '../lib/security.js';
 
 const router = express.Router();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 router.get('/:code', async (req, res) => {
   const { code } = req.params;
-  const host = req.get('host');
+  const host = normalizeHost(req.get('host'));
 
   if (['favicon.ico', 'api', 'assets', 'bio'].includes(code) || code.includes('.')) return;
 
@@ -34,6 +35,8 @@ router.get('/:code', async (req, res) => {
     if (!result.rows.length) return res.status(404).send('Not found');
 
     const link = result.rows[0];
+    const destination = validatePublicHttpUrl(link.long_url);
+    if (!destination.ok) return res.status(400).send('Unsafe destination');
     if (link.expires_at && new Date(link.expires_at) < new Date()) return res.status(410).send('Expired');
 
     if (link.link_password_hash) {
@@ -78,7 +81,7 @@ router.get('/:code', async (req, res) => {
     // Show interstitial for guest links or free users, redirect instantly for pro/promax
     const isPro = link.plan === 'pro' || link.plan === 'promax';
     if (isPro) {
-      return res.redirect(301, link.long_url);
+      return res.redirect(302, destination.url);
     }
 
     // Show interstitial page
@@ -175,22 +178,26 @@ router.get('/:code', async (req, res) => {
   <div class="card">
     <span class="logo">xlip<span>.uk</span></span>
     <div class="label">You are being redirected to</div>
-    <div class="destination">${link.long_url}</div>
+    <div class="destination">${escapeHtml(destination.url)}</div>
     <div class="safety">🛡️ Checked by Google Safe Browsing</div>
-    <button class="btn-continue" onclick="window.location.href='${link.long_url}'">Continue →</button>
+    <button class="btn-continue" id="continue-btn">Continue →</button>
     <button class="btn-report" onclick="reportLink()">🚩 Report this link</button>
     <div class="reported" id="reported">✓ Reported. Thank you for keeping xlip safe.</div>
     <div class="footer-note">Short link by <a href="https://xlip.uk">xlip.uk</a> — <a href="https://xlip.uk/support.html">help</a></div>
   </div>
   <script>
+    const destinationUrl = ${JSON.stringify(destination.url)};
+    document.getElementById('continue-btn').addEventListener('click', () => {
+      window.location.href = destinationUrl;
+    });
     async function reportLink() {
       try {
         await fetch('/api/report', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
-            shortCode: '${code}',
-            longUrl: '${link.long_url}',
+            shortCode: ${JSON.stringify(code)},
+            longUrl: destinationUrl,
             linkId: ${link.id}
           })
         });

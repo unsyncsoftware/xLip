@@ -26,21 +26,56 @@ const PAYPAL_LINK_PLAN_MAP = {
   'Z67KRZHFS425U': 'business', // Tier 3 $8
 };
 
+async function verifyPayPalIpn(rawBody) {
+  if (process.env.NODE_ENV !== 'production' && process.env.PAYPAL_WEBHOOK_VERIFY_DISABLED === 'true') {
+    return true;
+  }
+  if (!rawBody) return false;
+
+  const paypalUrl = process.env.PAYPAL_IPN_URL || (
+    process.env.PAYPAL_ENV === 'sandbox'
+      ? 'https://ipnpb.sandbox.paypal.com/cgi-bin/webscr'
+      : 'https://ipnpb.paypal.com/cgi-bin/webscr'
+  );
+
+  const response = await fetch(paypalUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: `cmd=_notify-validate&${rawBody}`,
+    signal: AbortSignal.timeout(8000)
+  });
+  const text = await response.text();
+  return text === 'VERIFIED';
+}
+
 // ============================================================
 // POST /webhooks/paypal
 // Receives PayPal IPN or webhook notification
 // ============================================================
-router.post('/paypal', express.urlencoded({ extended: true }), async (req, res) => {
+router.post('/paypal', express.urlencoded({
+  extended: false,
+  verify: (req, res, buf) => {
+    req.rawBody = buf.toString('utf8');
+  }
+}), async (req, res) => {
   try {
     const body = req.body;
 
-    // Log for debugging
-    console.log('[PayPal Webhook]', JSON.stringify(body, null, 2));
+    const verified = await verifyPayPalIpn(req.rawBody);
+    if (!verified) {
+      console.warn('[PayPal Webhook] Rejected unverified notification');
+      return res.status(400).send('Invalid webhook');
+    }
 
     // PayPal IPN sends payment_status
     const paymentStatus = body.payment_status;
     const customField = body.custom; // This is where we pass user ID
     const paypalLinkId = body.item_number || body.button_id || '';
+    const receiver = body.receiver_email || body.business || '';
+    if (process.env.PAYPAL_RECEIVER_EMAIL && receiver.toLowerCase() !== process.env.PAYPAL_RECEIVER_EMAIL.toLowerCase()) {
+      console.warn('[PayPal Webhook] Rejected unexpected receiver');
+      return res.status(400).send('Invalid receiver');
+    }
 
     // Only process completed payments
     if (paymentStatus !== 'Completed') {
@@ -51,13 +86,13 @@ router.post('/paypal', express.urlencoded({ extended: true }), async (req, res) 
     // Parse user ID from custom field
     // Format we send: "uid_123" where 123 is the user ID
     if (!customField || !customField.startsWith('uid_')) {
-      console.log('[PayPal Webhook] Missing or invalid custom field:', customField);
+      console.log('[PayPal Webhook] Missing or invalid custom field');
       return res.status(200).send('OK');
     }
 
     const userId = parseInt(customField.replace('uid_', ''));
     if (isNaN(userId)) {
-      console.log('[PayPal Webhook] Invalid user ID:', customField);
+      console.log('[PayPal Webhook] Invalid user ID');
       return res.status(200).send('OK');
     }
 
@@ -93,7 +128,7 @@ router.post('/paypal', express.urlencoded({ extended: true }), async (req, res) 
     }
 
     const user = result.rows[0];
-    console.log(`[PayPal Webhook] ✅ Upgraded user ${user.email} to ${plan} until ${planExpiresAt}`);
+    console.log(`[PayPal Webhook] Upgraded user ${userId} to ${plan} until ${planExpiresAt.toISOString()}`);
 
     // Send upgrade confirmation email
     await sendUpgradeEmail(user.email, plan, planExpiresAt);

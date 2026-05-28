@@ -103,6 +103,12 @@
     const token = localStorage.getItem('xlip_admin_token') || localStorage.getItem('xlip_token');
     if (!token) window.location.href = 'login.html';
     const auth = { 'Authorization': `Bearer ${token}` };
+    const escapeHtml = (value = '') => String(value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
 
     const params = new URLSearchParams(window.location.search);
     const userId = params.get('id');
@@ -123,7 +129,7 @@
       document.getElementById('profile-page').innerHTML = `
         <div class="profile-header">
           <div>
-            <div class="profile-email">${u.email}</div>
+            <div class="profile-email">${escapeHtml(u.email)}</div>
             <div class="profile-meta">
               ${planBadge(u.plan)}
               ${u.is_banned ? '<span class="badge badge-red">banned</span>' : u.is_admin ? '<span class="badge badge-lime">admin</span>' : u.is_verified ? '<span class="badge badge-green">active</span>' : '<span class="badge badge-gray">unverified</span>'}
@@ -148,7 +154,7 @@
         <div class="info-grid">
           <div class="info-card"><div class="info-label">Total Links</div><div class="info-value">${data.links.length}</div></div>
           <div class="info-card"><div class="info-label">Total Clicks</div><div class="info-value">${data.links.reduce((s, l) => s + parseInt(l.clicks || 0), 0)}</div></div>
-          <div class="info-card"><div class="info-label">Bio Page</div><div class="info-value normal">${data.bio ? `<a href="https://xlip.uk/${data.bio.username}" target="_blank" style="color:var(--lime);">@${data.bio.username}</a>` : '—'}</div></div>
+          <div class="info-card"><div class="info-label">Bio Page</div><div class="info-value normal">${data.bio ? `<a href="https://xlip.uk/${encodeURIComponent(data.bio.username)}" target="_blank" style="color:var(--lime);">@${escapeHtml(data.bio.username)}</a>` : '—'}</div></div>
           <div class="info-card"><div class="info-label">Abuse Reports</div><div class="info-value ${data.abuse.length > 0 ? '' : ''}">${data.abuse.length}</div></div>
         </div>
 
@@ -160,11 +166,11 @@
             <tbody>
               ${data.links.map(l => `
                 <tr>
-                  <td class="mono lime">/${l.custom_alias || l.short_code}</td>
-                  <td class="truncate dim">${l.long_url}</td>
-                  <td style="text-align:center" class="mono">${l.clicks}</td>
+                  <td class="mono lime">/${escapeHtml(l.custom_alias || l.short_code)}</td>
+                  <td class="truncate dim">${escapeHtml(l.long_url)}</td>
+                  <td style="text-align:center" class="mono">${Number(l.clicks) || 0}</td>
                   <td class="dim">${new Date(l.created_at).toLocaleDateString()}</td>
-                  <td style="text-align:right"><button class="action-btn btn-nuke" style="font-size:10px;padding:4px 8px;" onclick="nukeLink(${l.id})">nuke</button></td>
+                  <td style="text-align:right"><button class="action-btn btn-nuke" style="font-size:10px;padding:4px 8px;" onclick="nukeLink(${Number(l.id)})">nuke</button></td>
                 </tr>
               `).join('')}
             </tbody>
@@ -176,8 +182,8 @@
         <div class="geo-grid">
           ${data.analytics.map(a => `
             <div class="geo-item">
-              <span class="geo-place">${a.city ? `${a.city}, ` : ''}${a.country}</span>
-              <span class="geo-count">${a.clicks}</span>
+              <span class="geo-place">${escapeHtml(a.city ? `${a.city}, ` : '')}${escapeHtml(a.country)}</span>
+              <span class="geo-count">${Number(a.clicks) || 0}</span>
             </div>
           `).join('')}
         </div>` : '<div class="empty">No location data yet.</div>'}
@@ -190,10 +196,10 @@
             <tbody>
               ${data.abuse.map(r => `
                 <tr>
-                  <td class="mono lime">${r.short_code || '—'}</td>
-                  <td class="truncate dim">${r.long_url || '—'}</td>
-                  <td class="mono dim">${r.reporter_ip}</td>
-                  <td><span class="badge ${r.status === 'pending' ? 'badge-warn' : 'badge-gray'}">${r.status}</span></td>
+                  <td class="mono lime">${r.short_code ? escapeHtml(r.short_code) : '—'}</td>
+                  <td class="truncate dim">${r.long_url ? escapeHtml(r.long_url) : '—'}</td>
+                  <td class="mono dim">${escapeHtml(r.reporter_ip)}</td>
+                  <td><span class="badge ${r.status === 'pending' ? 'badge-warn' : 'badge-gray'}">${escapeHtml(r.status)}</span></td>
                   <td class="dim">${new Date(r.reported_at).toLocaleString()}</td>
                 </tr>
               `).join('')}

@@ -667,6 +667,16 @@
     let bioLinks = [];
     let usernameTimer = null;
     let currentUsername = '';
+    const escapeHtml = (value = '') => String(value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+    const safePath = (value = '') => {
+      const text = String(value);
+      return text.startsWith('/uploads/') ? encodeURI(text) : '';
+    };
 
     // ── LOAD PROFILE ──
     async function loadProfile() {
@@ -900,19 +910,19 @@
       const list = document.getElementById('bio-links-list');
       list.innerHTML = bioLinks.map(link => `
         <div class="bio-link-item">
-          ${link.image_url
-            ? `<img src="${link.image_url}" class="bio-link-thumb" alt="">`
+          ${safePath(link.image_url)
+            ? `<img src="${safePath(link.image_url)}" class="bio-link-thumb" alt="">`
             : `<div class="bio-link-thumb-placeholder">🔗</div>`}
           <div class="bio-link-info">
-            <div class="bio-link-title">${link.title}</div>
-            <div class="bio-link-url">${link.url}</div>
-            <div class="bio-link-clicks">${link.clicks || 0} clicks</div>
+            <div class="bio-link-title">${escapeHtml(link.title)}</div>
+            <div class="bio-link-url">${escapeHtml(link.url)}</div>
+            <div class="bio-link-clicks">${Number(link.clicks) || 0} clicks</div>
           </div>
           <div class="bio-link-actions">
-            <button class="icon-btn" onclick="toggleLink(${link.id}, ${link.is_active})" title="${link.is_active ? 'Hide' : 'Show'}">
+            <button class="icon-btn" onclick="toggleLink(${Number(link.id)}, ${Boolean(link.is_active)})" title="${link.is_active ? 'Hide' : 'Show'}">
               ${link.is_active ? '👁' : '🚫'}
             </button>
-            <button class="icon-btn del" onclick="deleteLink(${link.id})" title="Delete">✕</button>
+            <button class="icon-btn del" onclick="deleteLink(${Number(link.id)})" title="Delete">✕</button>
           </div>
         </div>
       `).join('');
@@ -943,7 +953,7 @@
       socialsEl.innerHTML = socials
         .filter(s => document.getElementById(s.id).value)
         .map(s => `
-          <a href="${s.url}${document.getElementById(s.id).value}" class="preview-social-icon"
+          <a href="${s.url}${encodeURIComponent(document.getElementById(s.id).value)}" class="preview-social-icon"
              style="background:${accent}22; color:${accent};" target="_blank">
             ${s.icon}
           </a>
@@ -953,10 +963,10 @@
       const previewLinks = document.getElementById('preview-links');
       previewLinks.innerHTML = bioLinks.filter(l => l.is_active).map(l => `
         <div class="preview-link" style="border-color:${accent}44;">
-          ${l.image_url
-            ? `<img src="${l.image_url}" class="preview-link-thumb" alt="">`
+          ${safePath(l.image_url)
+            ? `<img src="${safePath(l.image_url)}" class="preview-link-thumb" alt="">`
             : `<div class="preview-link-thumb" style="background:${accent}22; display:flex; align-items:center; justify-content:center; font-size:16px;">🔗</div>`}
-          <span class="preview-link-title">${l.title}</span>
+          <span class="preview-link-title">${escapeHtml(l.title)}</span>
           <span style="color:${accent}; font-size:10px;">→</span>
         </div>
       `).join('');

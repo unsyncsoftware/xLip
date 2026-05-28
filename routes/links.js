@@ -11,46 +11,54 @@ import { authenticateToken, optionalAuth } from '../middleware/jwt.js';
 import { guestShortenLimit } from '../middleware/rateLimit.js';
 import { logVisit } from '../middleware/logger.js';
 import { checkLimit, incrementLinkCount } from '../middleware/checkLimit.js';
+import { isAllowedHost, normalizeHost, validateAlias, validatePublicHttpUrl } from '../lib/security.js';
 
 const router = express.Router();
 
 // ── SHORTEN ──
 router.post('/shorten', optionalAuth, guestShortenLimit, checkLimit, logVisit('link_shortened'), async (req, res) => {
   const { longUrl, customAlias, password, expiresAt } = req.body;
-  const domainName = req.get('host');
+  if (!isAllowedHost(req.get('host'))) return res.status(400).json({ error: 'Invalid host' });
+  const domainName = normalizeHost(req.get('host'));
   const shortCode = nanoid(6);
 
-  try { new URL(longUrl); } catch { return res.status(400).json({ error: 'Invalid URL' }); }
+  const urlValidation = validatePublicHttpUrl(longUrl);
+  if (!urlValidation.ok) return res.status(400).json({ error: urlValidation.error });
+
+  const aliasValidation = validateAlias(customAlias);
+  if (!aliasValidation.ok) return res.status(400).json({ error: aliasValidation.error });
 
   // Safe Browsing check
-  const sbRes = await fetch(`https://safebrowsing.googleapis.com/v4/threatMatches:find?key=${process.env.GOOGLE_SAFE_BROWSING_KEY}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      client: { clientId: 'xlip.uk', clientVersion: '1.0' },
-      threatInfo: {
-        threatTypes: ['MALWARE', 'SOCIAL_ENGINEERING', 'UNWANTED_SOFTWARE', 'POTENTIALLY_HARMFUL_APPLICATION'],
-        platformTypes: ['ANY_PLATFORM'],
-        threatEntryTypes: ['URL'],
-        threatEntries: [{ url: longUrl }]
-      }
-    })
-  });
-  const sbData = await sbRes.json();
-  if (sbData.matches && sbData.matches.length > 0) {
-    const ip = req.ip || req.headers['x-forwarded-for'] || 'unknown';
-    pool.query(
-      'INSERT INTO visitor_logs (ip_address, action, detail) VALUES ($1, $2, $3)',
-      [ip, 'url_blocked', longUrl]
-    ).catch(() => {});
-    return res.status(400).json({ error: 'URL flagged as unsafe' });
+  if (process.env.GOOGLE_SAFE_BROWSING_KEY) {
+    const sbRes = await fetch(`https://safebrowsing.googleapis.com/v4/threatMatches:find?key=${process.env.GOOGLE_SAFE_BROWSING_KEY}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        client: { clientId: 'xlip.uk', clientVersion: '1.0' },
+        threatInfo: {
+          threatTypes: ['MALWARE', 'SOCIAL_ENGINEERING', 'UNWANTED_SOFTWARE', 'POTENTIALLY_HARMFUL_APPLICATION'],
+          platformTypes: ['ANY_PLATFORM'],
+          threatEntryTypes: ['URL'],
+          threatEntries: [{ url: urlValidation.url }]
+        }
+      })
+    });
+    const sbData = await sbRes.json();
+    if (sbData.matches && sbData.matches.length > 0) {
+      const ip = req.ip || req.headers['x-forwarded-for'] || 'unknown';
+      pool.query(
+        'INSERT INTO visitor_logs (ip_address, action, detail) VALUES ($1, $2, $3)',
+        [ip, 'url_blocked', urlValidation.parsed.hostname]
+      ).catch(() => {});
+      return res.status(400).json({ error: 'URL flagged as unsafe' });
+    }
   }
 
   try {
-    if (customAlias) {
+    if (aliasValidation.value) {
       const exists = await pool.query(
         'SELECT 1 FROM links WHERE custom_alias = $1 AND domain_name = $2',
-        [customAlias, domainName]
+        [aliasValidation.value, domainName]
       );
       if (exists.rows.length) return res.status(409).json({ error: 'Alias taken' });
     }
@@ -61,13 +69,13 @@ router.post('/shorten', optionalAuth, guestShortenLimit, checkLimit, logVisit('l
     await pool.query(
       `INSERT INTO links (long_url, short_code, custom_alias, user_id, link_password_hash, expires_at, domain_name)
        VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-      [longUrl, shortCode, customAlias || null, userId, passwordHash, expiresAt || null, domainName]
+      [urlValidation.url, shortCode, aliasValidation.value, userId, passwordHash, expiresAt || null, domainName]
     );
 
     // Increment usage count for logged-in users
     if (userId) await incrementLinkCount(userId);
 
-    res.json({ shortUrl: `https://${domainName}/${customAlias || shortCode}` });
+    res.json({ shortUrl: `https://${domainName}/${aliasValidation.value || shortCode}` });
   } catch (err) {
     console.error('SHORTEN ERROR:', err);
     res.status(500).json({ error: 'Shortening failed' });
@@ -116,7 +124,12 @@ router.patch('/user/links/:id', authenticateToken, async (req, res) => {
   const { longUrl, password } = req.body;
   try {
     let updates = [], values = [], idx = 1;
-    if (longUrl) { updates.push(`long_url = $${idx++}`); values.push(longUrl); }
+    if (longUrl) {
+      const urlValidation = validatePublicHttpUrl(longUrl);
+      if (!urlValidation.ok) return res.status(400).json({ error: urlValidation.error });
+      updates.push(`long_url = $${idx++}`);
+      values.push(urlValidation.url);
+    }
     if (password) {
       const hash = await bcrypt.hash(password, 10);
       updates.push(`link_password_hash = $${idx++}`);

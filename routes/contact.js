@@ -1,5 +1,6 @@
 import express from 'express';
 import { Resend } from 'resend';
+import { escapeHtml } from '../lib/security.js';
 
 const router = express.Router();
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -25,10 +26,10 @@ router.post('/contact', async (req, res) => {
       subject: `[Support] ${subject || 'New message'} — from ${name}`,
       html: `<div style="font-family:sans-serif;background:#0e1628;color:#cdd8f0;padding:40px;">
         <h2 style="color:#b8d900;font-family:monospace;">xlip.uk Support</h2>
-        <p><strong>From:</strong> ${name} &lt;${email}&gt;</p>
-        <p><strong>Subject:</strong> ${subject || '(none)'}</p>
+        <p><strong>From:</strong> ${escapeHtml(name)} &lt;${escapeHtml(email)}&gt;</p>
+        <p><strong>Subject:</strong> ${escapeHtml(subject || '(none)')}</p>
         <hr style="border-color:#1e2d47;">
-        <p style="white-space:pre-wrap;">${message.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</p>
+        <p style="white-space:pre-wrap;">${escapeHtml(message)}</p>
       </div>`
     });
 
@@ -38,7 +39,7 @@ router.post('/contact', async (req, res) => {
       subject: 'We received your message — xlip.uk Support',
       html: `<div style="font-family:sans-serif;background:#0e1628;color:#cdd8f0;padding:40px;">
         <h2 style="color:#b8d900;font-family:monospace;">xlip.uk</h2>
-        <h3>Hi ${name}, we got your message.</h3>
+        <h3>Hi ${escapeHtml(name)}, we got your message.</h3>
         <p style="color:#5a6a85;">We'll get back to you within 24–48 hours.</p>
         <p style="color:#3a4a65;font-size:12px;">— xlip.uk Support</p>
       </div>`

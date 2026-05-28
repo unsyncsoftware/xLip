@@ -1,6 +1,7 @@
 import express from 'express';
 import { pool } from '../db.js';
 import { Resend } from 'resend';
+import { escapeHtml } from '../lib/security.js';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 const router = express.Router();
@@ -23,9 +24,9 @@ router.post('/report', async (req, res) => {
       html: `
         <div style="font-family:sans-serif;background:#0e1628;color:#cdd8f0;padding:40px;">
           <h2 style="color:#e05a5a;">🚩 Abuse Report</h2>
-          <p><strong>Short code:</strong> xlip.uk/${shortCode}</p>
-          <p><strong>Destination:</strong> ${longUrl}</p>
-          <p><strong>Reporter IP:</strong> ${ip}</p>
+          <p><strong>Short code:</strong> xlip.uk/${escapeHtml(shortCode)}</p>
+          <p><strong>Destination:</strong> ${escapeHtml(longUrl)}</p>
+          <p><strong>Reporter IP:</strong> ${escapeHtml(ip)}</p>
         </div>
       `
     });

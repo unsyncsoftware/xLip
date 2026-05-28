@@ -1,15 +1,27 @@
+import 'dotenv/config';
 import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import pg from 'pg';
 import bcrypt from 'bcrypt';
 import { exec } from 'child_process';
 import jwt from 'jsonwebtoken';
+import { rateLimit } from 'express-rate-limit';
+import { pool } from './db.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
-const { Pool } = pg;
-const JWT_SECRET = 'CHANGE_ME';
+const JWT_SECRET = process.env.ADMIN_JWT_SECRET || process.env.JWT_SECRET;
+if (!JWT_SECRET || JWT_SECRET === 'CHANGE_ME' || JWT_SECRET.length < 32) {
+  throw new Error('ADMIN_JWT_SECRET or JWT_SECRET must be set to a strong secret of at least 32 characters');
+}
+
+const adminLoginLimit = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many admin login attempts. Try again later.' }
+});
 
 const adminAuth = (req, res, next) => {
   const token = req.headers['authorization']?.split(' ')[1];
@@ -24,16 +36,19 @@ const adminAuth = (req, res, next) => {
   }
 };
 
-const pool = new Pool({
-  connectionString: 'postgresql://xlip_admin:638hskjruwi758@127.0.0.1:5432/xlip_db',
-  ssl: false
-});
-
 app.use(express.json());
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('Content-Security-Policy', "frame-ancestors 'none'");
+  next();
+});
 app.use(express.static(path.join(__dirname, 'public/race-control-hidden')));
 
 // ── LOGIN ──
-app.post('/api/admin/login', async (req, res) => {
+app.post('/api/admin/login', adminLoginLimit, async (req, res) => {
   const { email, password } = req.body;
   try {
     const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);

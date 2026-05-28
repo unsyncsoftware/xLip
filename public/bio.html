@@ -255,6 +255,16 @@
 
   <script>
     const username = window.location.pathname.replace('/', '').split('/')[0];
+    const escapeHtml = (value = '') => String(value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+    const safePath = (value = '') => {
+      const text = String(value);
+      return text.startsWith('/uploads/') ? encodeURI(text) : '';
+    };
 
     async function loadBio() {
       const res = await fetch(`/api/bio/${username}`);
@@ -285,22 +295,23 @@
       ];
 
       const activeSocials = socialMap.filter(s => data[s.key]);
+      const avatarUrl = safePath(data.avatar_url);
 
       container.innerHTML = `
         <div class="avatar-wrap">
-          ${data.avatar_url
-            ? `<img src="${data.avatar_url}" class="avatar" alt="${data.display_name || data.username}">`
+          ${avatarUrl
+            ? `<img src="${avatarUrl}" class="avatar" alt="${escapeHtml(data.display_name || data.username)}">`
             : `<div class="avatar-placeholder">👤</div>`}
         </div>
 
-        <div class="display-name">${data.display_name || data.username}</div>
+        <div class="display-name">${escapeHtml(data.display_name || data.username)}</div>
 
-        ${data.bio ? `<div class="bio-text">${data.bio}</div>` : ''}
+        ${data.bio ? `<div class="bio-text">${escapeHtml(data.bio)}</div>` : ''}
 
         ${activeSocials.length ? `
           <div class="socials">
             ${activeSocials.map(s => `
-              <a href="${s.url}${data[s.key]}" class="social-btn" target="_blank" rel="noopener">
+              <a href="${s.url}${encodeURIComponent(data[s.key])}" class="social-btn" target="_blank" rel="noopener">
                 ${s.icon} ${s.label}
               </a>
             `).join('')}
@@ -311,11 +322,11 @@
           ${data.links.map((link, i) => `
             <a href="/api/bio/click/${link.id}" class="link-card" target="_blank" rel="noopener"
                style="animation-delay:${i * 0.05}s">
-              ${link.image_url
-                ? `<img src="${link.image_url}" class="link-thumb" alt="${link.title}">`
+              ${safePath(link.image_url)
+                ? `<img src="${safePath(link.image_url)}" class="link-thumb" alt="${escapeHtml(link.title)}">`
                 : `<div class="link-thumb-placeholder">🔗</div>`}
               <div class="link-info">
-                <div class="link-title">${link.title}</div>
+                <div class="link-title">${escapeHtml(link.title)}</div>
               </div>
               <div class="link-arrow">→</div>
             </a>

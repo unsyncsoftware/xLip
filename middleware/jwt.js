@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
+import { requireSecret } from '../lib/security.js';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'CHANGE_ME';
+const JWT_SECRET = requireSecret('JWT_SECRET');
 
 export const authenticateToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
